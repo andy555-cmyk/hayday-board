@@ -96,7 +96,9 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
 html[data-theme="dark"] .seg button.on{background:var(--blue)}
 .search{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);
         border-radius:var(--r-ctl);padding:9px 15px;min-width:210px;font-size:12.5px;color:var(--muted)}
-.search .o{width:12px;height:12px;border:1.6px solid var(--muted);border-radius:50%}
+.search .o{width:12px;height:12px;border:1.6px solid var(--muted);border-radius:50%;flex:none}
+.search input{border:0;background:transparent;outline:none;font:inherit;font-size:12.5px;color:var(--txt);width:100%}
+.search input::placeholder{color:var(--muted)}
 .stack{display:flex}
 .stack .av{width:30px;height:30px;border-radius:50%;border:2.5px solid var(--card);margin-left:-9px}
 .stack .av:first-child{margin-left:0}
@@ -193,6 +195,8 @@ html[data-theme="dark"] .bd.대기,html[data-theme="dark"] .bd.완료{background
 .gt .barx{position:absolute;top:0;height:26px;border-radius:8px;display:flex;align-items:center;
           padding:0 11px;font-size:11px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden}
 .gt .today{position:absolute;top:0;bottom:0;width:2px;background:var(--blue);z-index:2}
+.gt .barlbl{position:absolute;top:0;height:26px;display:flex;align-items:center;font-size:11px;
+  font-weight:600;color:var(--txt2);white-space:nowrap;pointer-events:none}
 .gt .todaycol{position:absolute;top:0;bottom:0;background:var(--blue-soft);opacity:.55;z-index:0}
 html[data-theme="dark"] .gt .todaycol{background:#1b2740;opacity:.7}
 
@@ -381,6 +385,32 @@ const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&g
 const av = (id,sz=22)=>`<span class="av" style="width:${sz}px;height:${sz}px;background:${M[id]?M[id].color:'#ccc'}"></span>`;
 const dday = d => Math.round((new Date(d+'T00:00:00')-TODAY)/864e5);
 const ddayTxt = d => { const n=dday(d); return n<0?`D+${-n}`:`D-${n}`; };
+let PERIOD = 'week';                      // day | week | month
+let ORDP   = 'half';                      // quarter | half | year
+let QUERY  = '';                          // 검색어
+let BOARDVIEW = 'board';                  // board | list | gantt
+let LINKF  = '전체';                       // 연계 필터
+const ymd = d => d.toISOString().slice(0,10);
+function periodRange(){
+  const t = TODAY;
+  if(PERIOD==='day'){ return {s:new Date(t), e:new Date(t), n:1, label:fmtD(t)+' ('+'일월화수목금토'[t.getDay()]+')'}; }
+  if(PERIOD==='month'){
+    const a=new Date(t.getFullYear(),t.getMonth(),1), b=new Date(t.getFullYear(),t.getMonth()+1,0);
+    return {s:a,e:b,n:b.getDate(),label:(t.getMonth()+1)+'월 · '+fmtD(a)+' ~ '+fmtD(b)};
+  }
+  const off=(t.getDay()===0?6:t.getDay()-1);
+  const a=new Date(t); a.setDate(t.getDate()-off);
+  const b=new Date(a); b.setDate(a.getDate()+6);
+  return {s:a,e:b,n:7,label:fmtD(a)+' ~ '+fmtD(b)};
+}
+const fmtD = d => `${d.getFullYear()}. ${String(d.getMonth()+1).padStart(2,'0')}. ${String(d.getDate()).padStart(2,'0')}`;
+function inRange(t,r){ return !(new Date(t.end+'T00:00:00') < r.s || new Date(t.start+'T00:00:00') > r.e); }
+function periodTasks(){ const r=periodRange(); return DATA.tasks.filter(t=>inRange(t,r)); }
+function setPeriod(p){ PERIOD=p; render(); }
+function setOrdP(p){ ORDP=p; render(); }
+function setBoardView(v){ BOARDVIEW=v; render(); }
+function setLinkF(v){ LINKF=v; render(); }
+function doSearch(v){ QUERY=v.trim(); render(); if(QUERY){ const i=document.getElementById('q'); if(i){i.focus(); i.setSelectionRange(i.value.length,i.value.length);} } }
 const tone = st => st==='지연'?'var(--red)':st==='완료'?'var(--muted)':st==='검수중'?'var(--green)':'var(--blue)';
 const fmt = n => n.toLocaleString('ko-KR');
 
@@ -412,44 +442,73 @@ function kpiRow(items){
     </div>`).join('')+`</div>`;
 }
 function ganttRows(tasks){
-  const seen=new Set(); tasks=tasks.filter(t=>{ if(seen.has(t.p))return false; seen.add(t.p); return true; }).slice(0,7);
-  const D0=new Date('2026-07-29T00:00:00');
-  const days=['29','30','31','01','02','03','04'], dn=['화','수','목','금','토','일','월'];
-  const todayIdx = Math.round((TODAY-D0)/864e5);
-  const col = 1/7;
-  return `<div class="gantt"><div class="gt">
-    <div class="hdr"><div class="lbl">프로젝트 / 담당자</div>${days.map((d,i)=>
-      `<div style="${i===todayIdx?'color:var(--blue)':''}">${d}<small>${dn[i]}</small></div>`).join('')}</div>
+  const r = periodRange();
+  const seen=new Set();
+  tasks = tasks.filter(t=>inRange(t,r)).filter(t=>{ if(seen.has(t.p))return false; seen.add(t.p); return true; }).slice(0,8);
+  if(!tasks.length) return `<div class="empty">이 기간에 걸쳐 있는 업무가 없습니다.</div>`;
+
+  const D0 = new Date(r.s), N = r.n, col = 1/N;
+  const todayIdx = Math.round((TODAY - D0)/864e5);
+  const heads=[];
+  for(let i=0;i<N;i++){
+    const d=new Date(D0); d.setDate(D0.getDate()+i);
+    const show = N<=7 || d.getDate()===1 || d.getDate()%5===0 || i===todayIdx;
+    heads.push(`<div style="${i===todayIdx?'color:var(--blue);font-weight:800':''};${show?'':'opacity:.25'}">
+      ${show?String(d.getDate()).padStart(2,'0'):'·'}${N<=7?`<small>${'일월화수목금토'[d.getDay()]}</small>`:''}</div>`);
+  }
+  return `<div class="gantt"><div class="gt" style="min-width:${Math.max(820, 170+N*34)}px">
+    <div class="hdr" style="grid-template-columns:170px repeat(${N},1fr)"><div class="lbl">프로젝트 / 담당자</div>${heads.join('')}</div>
     <div style="position:relative;padding-top:10px">
-      <div class="todaycol" style="left:calc(170px + (100% - 170px) * ${todayIdx*col});width:calc((100% - 170px) * ${col})"></div>
+      ${todayIdx>=0&&todayIdx<N?`<div class="todaycol" style="left:calc(170px + (100% - 170px) * ${todayIdx*col});width:calc((100% - 170px) * ${col})"></div>`:''}
       ${tasks.map(t=>{
         const s0=Math.max(0,Math.round((new Date(t.start+'T00:00:00')-D0)/864e5));
-        const e0=Math.min(6,Math.round((new Date(t.end+'T00:00:00')-D0)/864e5));
+        const e0=Math.min(N-1,Math.round((new Date(t.end+'T00:00:00')-D0)/864e5));
         const w=Math.max(1,e0-s0+1);
         const nm=P[t.p].name.replace(/\s*\(.*?\)/,'');
-        return `<div class="row"><div class="nm">${esc(nm)}<small>${esc(M[t.a].name)}</small></div>
-        <div class="track"><div class="barx" title="${esc(t.title)}" style="left:${s0*col*100}%;width:${w*col*100}%;background:${tone(t.status)}">${esc(t.title)}</div></div></div>`;
+        return `<div class="row" style="grid-template-columns:170px repeat(${N},1fr)">
+        <div class="nm">${esc(nm)}<small>${esc(M[t.a].name)}</small></div>
+        <div class="track" style="grid-column:2 / span ${N}"><div class="barx" title="${esc(t.title)}"
+          style="left:${s0*col*100}%;width:${w*col*100}%;background:${tone(t.status)}">${w*col>0.14?esc(t.title):''}</div>
+          ${w*col>0.14?'':`<span class="barlbl" style="left:calc(${(s0+w)*col*100}% + 8px)">${esc(t.title)}</span>`}</div></div>`;
       }).join('')}
     </div></div></div>`;
 }
 
+/* 일간 — 간트 대신 오늘 할 일 목록이 실용적이다 */
+function dayBoard(){
+  const r=periodRange(), list=DATA.tasks.filter(t=>inRange(t,r));
+  if(!list.length) return `<div class="empty">오늘 진행 중인 업무가 없습니다.</div>`;
+  const byMem={}; list.forEach(t=>(byMem[t.a]=byMem[t.a]||[]).push(t));
+  return `<div class="cols3">${Object.entries(byMem).map(([mid,ts])=>`
+    <div style="background:var(--inset);border-radius:14px;padding:14px">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:12px">
+        ${av(mid,26)}<b style="font-size:12.5px">${esc(M[mid].name)}</b>
+        <span style="margin-left:auto;font-size:11px;color:var(--muted)">${ts.length}건</span></div>
+      ${ts.map(t=>`<div class="tc" onclick="cycleStatus('${t.id}')" title="클릭하면 상태가 넘어갑니다">
+        <span class="tag">${esc(t.tag)}</span><b>${esc(t.title)}</b>
+        <div class="bt"><span class="bd ${t.status}" style="font-size:10px">${t.status}</span>
+        <span class="d" style="${dday(t.due)<=2&&t.status!=='완료'?'color:var(--red)':''}">${t.status==='완료'?'완료':ddayTxt(t.due)}</span></div></div>`).join('')}
+    </div>`).join('')}</div>`;
+}
+function timeline(){ return PERIOD==='day' ? dayBoard() : ganttRows(DATA.tasks); }
+
 /* ---------- views ---------- */
 function vDashboard(){
-  const T=DATA.tasks, done=T.filter(t=>t.status==='완료').length,
+  const T=periodTasks(), done=T.filter(t=>t.status==='완료').length,
         run=T.filter(t=>t.status==='진행중').length, late=T.filter(t=>t.status==='지연').length;
   const assigned=T.length, total=T.length+DATA.unassigned.length;
-  const week=T.filter(t=>new Date(t.start)<=new Date('2026-08-04')&&new Date(t.end)>=new Date('2026-07-29'));
+  const pl={day:'오늘',week:'이번 주',month:'이번 달'}[PERIOD];
   const byMem={}; T.forEach(t=>byMem[t.a]=(byMem[t.a]||0)+1);
   return kpiRow([
-    {label:'전체 업무',value:total,unit:'건',pct:100,foot:`전주 대비 +${DATA.unassigned.length}`},
-    {label:'진행중',value:run,unit:'건',pct:Math.round(run/total*100),foot:`담당자 지정 ${assigned}건`},
-    {label:'완료',value:done,unit:'건',pct:Math.round(done/total*100),color:'var(--green)',foot:`완료율 ${Math.round(done/total*100)}%`},
-    {label:'지연 · 보류',value:late,unit:'건',pct:Math.round(late/total*100),color:'var(--red)',foot:'즉시 조치 필요'}
+    {label:pl+' 전체 업무',value:total,unit:'건',pct:100,foot:`미지정 ${DATA.unassigned.length}건 포함`},
+    {label:'진행중',value:run,unit:'건',pct:total?Math.round(run/total*100):0,foot:`담당자 지정 ${assigned}건`},
+    {label:'완료',value:done,unit:'건',pct:total?Math.round(done/total*100):0,color:'var(--green)',foot:`완료율 ${total?Math.round(done/total*100):0}%`},
+    {label:'지연 · 보류',value:late,unit:'건',pct:total?Math.round(late/total*100):0,color:'var(--red)',foot:'즉시 조치 필요'}
   ])
   +`<div class="cols">
     <div class="card pad">
       <div class="ch"><h3>프로젝트별 추진현황</h3><span class="pill">${DATA.projects.filter(p=>p.status!=='완료').length}개 진행</span>
-        <a class="more" href="#/projects">전체보기</a></div>
+        <a class="more" href="#/projects" style="cursor:pointer">전체보기</a></div>
       <table><thead><tr><th>프로젝트</th><th>담당자</th><th>진행률</th><th>상태</th><th style="text-align:right">기한</th></tr></thead><tbody>
       ${DATA.projects.filter(p=>p.status!=='완료').slice(0,6).map(p=>`<tr onclick="location.hash='#/project/${p.id}'" style="cursor:pointer">
         <td><div class="pn"><span class="tick" style="background:${M[p.owner].color}"></span>
@@ -461,7 +520,7 @@ function vDashboard(){
       </tbody></table>
     </div>
     <div class="dp">
-      <div class="ch"><h3>담당자 지정 현황</h3><span class="pill" style="margin-left:auto">${Math.round(assigned/total*100)}%</span></div>
+      <div class="ch"><h3>담당자 지정 현황</h3><span class="pill" style="margin-left:auto">${total?Math.round(assigned/total*100):0}%</span></div>
       <div class="big">${assigned}<small>/ ${total}건 지정 완료</small></div>
       <div class="segbar">${DATA.members.map(m=>`<i style="flex:${byMem[m.id]||0.4};background:${m.color}"></i>`).join('')}
         <i style="flex:${DATA.unassigned.length};background:#39424f"></i></div>
@@ -475,9 +534,11 @@ function vDashboard(){
     </div>
   </div>
   <div class="card pad" style="margin-bottom:20px">
-    <div class="ch"><h3>스케줄표 · 주간 타임라인</h3><span style="font-size:11.5px;color:var(--muted)">2026. 07. 29 ~ 08. 04</span>
-      <div class="seg" style="margin-left:auto"><button>일</button><button class="on">주</button><button>월</button></div></div>
-    ${ganttRows(week)}
+    <div class="ch"><h3>스케줄표 · ${{day:'일간',week:'주간',month:'월간'}[PERIOD]} 타임라인</h3>
+      <span style="font-size:11.5px;color:var(--muted)">${periodRange().label}</span>
+      <div class="seg" style="margin-left:auto">${[['day','일'],['week','주'],['month','월']].map(([k,l])=>
+        `<button class="${PERIOD===k?'on':''}" onclick="setPeriod('${k}')">${l}</button>`).join('')}</div></div>
+    ${timeline()}
   </div>
   <div class="cols3">
     <div class="card pad"><div class="ch"><h3>일간 · 오늘 할 일</h3>
@@ -540,17 +601,27 @@ function vProject(id){
   ])}
   <div class="cols">
     <div class="card pad"><div class="ch"><h3>업무 보드</h3><span class="pill">총 ${ts.length}건</span>
-      <span class="more">보드 · 리스트 · 간트</span></div>
-      <div class="kb">${cols.map(([c,color])=>{
+      <div class="seg" style="margin-left:auto;padding:3px">${[['board','보드'],['list','리스트'],['gantt','간트']].map(([k,l])=>
+        `<button class="${BOARDVIEW===k?'on':''}" style="padding:5px 12px;font-size:11.5px" onclick="setBoardView('${k}')">${l}</button>`).join('')}</div></div>
+      ${BOARDVIEW==='list'?`<table><thead><tr><th>업무</th><th>담당자</th><th>주기</th><th>상태</th><th style="text-align:right">기한</th></tr></thead><tbody>
+        ${ts.map(t=>`<tr><td><b style="font-weight:600">${esc(t.title)}</b>
+          <span style="display:block;font-size:10.5px;color:var(--muted);margin-top:2px">${esc(t.tag)}</span></td>
+          <td><div class="who">${av(t.a)}${esc(M[t.a].name)}</div></td>
+          <td style="font-size:12px;color:var(--txt2)">${t.cycle}</td>
+          <td><span class="bd ${t.status}" style="cursor:pointer" onclick="cycleStatus('${t.id}')">${t.status}</span></td>
+          <td style="text-align:right"><span class="dday ${dday(t.due)<=2&&t.status!=='완료'?'urg':''}">${t.status==='완료'?'—':ddayTxt(t.due)}</span></td></tr>`).join('')}
+        </tbody></table>`
+      : BOARDVIEW==='gantt'? ganttRows(ts)
+      : `<div class="kb">${cols.map(([c,color])=>{
         const list=ts.filter(t=>c==='대기'?(t.status==='대기'||t.status==='지연'):t.status===c);
         return `<div class="kbc"><div class="kh"><em style="background:${color}"></em>${c}<i>${list.length}</i></div>
         ${list.map(t=>`<div class="tc" onclick="cycleStatus('${t.id}')" title="클릭하면 상태가 넘어갑니다"><span class="tag">${esc(t.tag)}</span><b>${esc(t.title)}</b>
           <div class="bt">${av(t.a,18)}${esc(M[t.a].name)}<span class="d" style="${dday(t.due)<=3&&t.status!=='완료'?'color:var(--red)':''}">${t.status==='완료'?'완료':ddayTxt(t.due)}</span></div></div>`).join('')}
         <button class="addbtn" onclick="openModal('${p.id}')">+ 업무 추가</button></div>`;
-      }).join('')}</div>
+      }).join('')}</div>`}
     </div>
     <div>
-      <div class="card pad" style="margin-bottom:18px"><div class="ch"><h3>담당자 · 역할 배정</h3><span class="pill" style="margin-left:auto">편집</span></div>
+      <div class="card pad" style="margin-bottom:18px"><div class="ch"><h3>담당자 · 역할 배정</h3><span class="pill" style="margin-left:auto;cursor:pointer" onclick="location.hash='#/assign'">편집</span></div>
         ${p.team.map(t=>`<div style="display:flex;align-items:center;gap:11px;background:var(--inset);border-radius:12px;padding:11px 13px;margin-bottom:8px">
           ${av(t,28)}<div><div style="font-size:12.5px;font-weight:600">${esc(M[t].name)}</div>
           <div style="font-size:10.5px;color:var(--muted)">${esc(M[t].role)}</div></div>
@@ -571,7 +642,7 @@ function vProject(id){
         <i></i><b>${esc(m.name)}</b><span>${esc(m.date)}</span></div>`).join('')}</div>
   </div>
   <div class="card pad"><div class="ch"><h3>산출물 · 문서</h3><span class="pill">${p.deliverables.length}개</span>
-    <span class="more">파일 업로드</span></div>
+    <span class="more" style="cursor:pointer" onclick="toast('파일 업로드는 2차 기능입니다 — 지금은 드라이브 링크로 관리합니다')">파일 업로드</span></div>
     ${p.deliverables.length?p.deliverables.map(d=>`<div class="file"><span class="ic"></span>
       <b style="font-weight:600">${esc(d.name)}</b><span class="k">${esc(d.kind)}</span>
       <span class="who">${av(d.by,20)}${esc(M[d.by].name)}</span>
@@ -605,16 +676,19 @@ function vTasks(){
 }
 
 function vSchedule(){
-  const week=DATA.tasks.filter(t=>new Date(t.start)<=new Date('2026-08-04')&&new Date(t.end)>=new Date('2026-07-29'));
   return `<div class="card pad" style="margin-bottom:20px">
-    <div class="ch"><h3>주간 타임라인</h3><span style="font-size:11.5px;color:var(--muted)">2026. 07. 29 ~ 08. 04</span>
-      <div class="seg" style="margin-left:auto"><button>일</button><button class="on">주</button><button>월</button></div></div>
-    ${ganttRows(week)}</div>
+    <div class="ch"><h3>${{day:'일간',week:'주간',month:'월간'}[PERIOD]} 타임라인</h3>
+      <span style="font-size:11.5px;color:var(--muted)">${periodRange().label}</span>
+      <div class="seg" style="margin-left:auto">${[['day','일'],['week','주'],['month','월']].map(([k,l])=>
+        `<button class="${PERIOD===k?'on':''}" onclick="setPeriod('${k}')">${l}</button>`).join('')}</div></div>
+    ${timeline()}</div>
   <div class="cols2">
-    <div class="card pad"><div class="ch"><h3>이번 주 마감</h3></div>
-      ${DATA.tasks.filter(t=>t.status!=='완료'&&dday(t.due)<=7).sort((a,b)=>dday(a.due)-dday(b.due)).map(t=>
-        `<div class="li"><span class="chk"></span>${esc(t.title.length>26?t.title.slice(0,26)+'…':t.title)}
-         <span class="tm ${dday(t.due)<=2?'':''}" style="${dday(t.due)<=2?'color:var(--red);font-weight:700':''}">${ddayTxt(t.due)}</span></div>`).join('')}
+    <div class="card pad"><div class="ch"><h3>${{day:'오늘',week:'이번 주',month:'이번 달'}[PERIOD]} 마감</h3>
+      <span class="pill" style="margin-left:auto">${periodTasks().filter(t=>t.status!=='완료').length}건</span></div>
+      ${periodTasks().filter(t=>t.status!=='완료').sort((a,b)=>dday(a.due)-dday(b.due)).map(t=>
+        `<div class="li"><span class="chk" onclick="toggleDone('${t.id}')"></span>${esc(t.title.length>26?t.title.slice(0,26)+'…':t.title)}
+         <span class="tm" style="${dday(t.due)<=2?'color:var(--red);font-weight:700':''}">${ddayTxt(t.due)}</span></div>`).join('')
+        || '<div class="empty">마감 예정 업무가 없습니다.</div>'}
     </div>
     <div class="card pad"><div class="ch"><h3>8월 마일스톤</h3></div>
       ${DATA.milestonesGlobal.map(m=>`<div class="mst"><b>${m.date}</b>${esc(m.text)}
@@ -691,15 +765,19 @@ function vOrders(){
   const sect={}; DATA.orders.forEach(o=>sect[o.sector]=(sect[o.sector]||0)+o.amount);
   const core=DATA.links.find(l=>l.core);
   const kindColor={'파생':'var(--green-soft);color:var(--green)','후속수주':'var(--amber-soft);color:#b57b0e','공동수행':'var(--violet-soft);color:#7c5cf0'};
+  const OP={quarter:{l:'분기',m:[7,9],t:'2026 3분기'},half:{l:'반기',m:[7,12],t:'2026 하반기'},year:{l:'연간',m:[1,12],t:'2026 연간'}}[ORDP];
+  const bill=DATA.billing.filter(b=>{const mm=+b.date.split('.')[0]; return mm>=OP.m[0]&&mm<=OP.m[1];});
   return kpiRow([
-    {label:'누적 수주액',value:tot.toFixed(1),unit:'억원',pct:100,foot:'2026 상반기 누적'},
+    {label:'누적 수주액',value:tot.toFixed(1),unit:'억원',pct:100,foot:OP.t+' 누적'},
     {label:'계약 건수',value:cnt,unit:'건',pct:70,foot:`거래처 ${DATA.orders.length}개사`},
     {label:'진행중 계약',value:DATA.orders.filter(o=>o.status==='진행중').length,unit:'건',pct:52,color:'var(--green)',foot:'전체의 52%'},
     {label:'미수금',value:DATA.orders.filter(o=>o.amount&&o.collect<100).reduce((s,o)=>s+o.amount*(100-o.collect)/100,0).toFixed(2),unit:'억원',pct:35,color:'var(--red)',foot:'수금 대기분 · 확인 필요'}
   ])
   +`<div class="cols">
     <div class="card pad"><div class="ch"><h3>업체별 수주현황</h3>
-      <span class="pill">${DATA.orders.length}개사 · ${cnt}건</span><span class="more">수주금액 순</span></div>
+      <span class="pill">${DATA.orders.length}개사 · ${cnt}건</span>
+      <div class="seg" style="margin-left:auto;padding:3px">${[['quarter','분기'],['half','반기'],['year','연간']].map(([k,l])=>
+        `<button class="${ORDP===k?'on':''}" style="padding:5px 12px;font-size:11.5px" onclick="setOrdP('${k}')">${l}</button>`).join('')}</div></div>
       <table><thead><tr><th>업체 / 발주처</th><th>구분</th><th>건수</th><th>수주금액</th><th>수금률</th><th>상태</th></tr></thead><tbody>
       ${DATA.orders.map(o=>`<tr><td><div class="pn"><span class="tick" style="background:var(--blue)"></span>
         <span><b>${esc(o.client)}</b><span>${esc(o.sub)}</span></span></div></td>
@@ -710,7 +788,7 @@ function vOrders(){
           <span>${o.collect?o.collect+'%':'—'}</span></div></td>
         <td><span class="bd ${o.status}">${o.status}</span></td></tr>`).join('')}
       </tbody></table></div>
-    <div class="dp"><div class="ch"><h3>수주 분석</h3><span class="pill" style="margin-left:auto">2026 상반기</span></div>
+    <div class="dp"><div class="ch"><h3>수주 분석</h3><span class="pill" style="margin-left:auto">${OP.t}</span></div>
       <div class="big">${tot.toFixed(1)}<small>억원 · 누적 수주액</small></div>
       <div style="font-size:11px;color:var(--dark-panel-sub);margin:16px 0 8px">업체 유형별 비중</div>
       <div class="segbar">${Object.entries(sect).map(([k,v],i)=>`<i style="flex:${v||0.3};background:${['#1b63f5','#23a18f','#f5a623','#a78bfa'][i%4]}"></i>`).join('')}</div>
@@ -719,13 +797,16 @@ function vOrders(){
         <b style="margin-left:auto;color:#fff">${v.toFixed(1)}억</b>
         <span style="width:44px;text-align:right">${tot?(v/tot*100).toFixed(1):0}%</span></div>`).join('')}
       <hr>
-      <div style="font-size:12.5px;font-weight:600;margin-bottom:12px">계약 · 수금 일정</div>
-      ${DATA.billing.map(b=>`<div class="act" style="color:#dbe2ec"><b style="color:var(--blue);width:38px">${b.date}</b>
-        ${esc(b.client)} · ${esc(b.item.slice(0,14))}<span class="t" style="color:#fff;font-weight:700">${b.amount}만</span></div>`).join('')}
+      <div style="font-size:12.5px;font-weight:600;margin-bottom:12px">계약 · 수금 일정
+        <span style="float:right;font-weight:400;color:var(--dark-panel-sub);font-size:11px">${OP.l} ${bill.length}건 · ${bill.reduce((a,b)=>a+b.amount,0)}만</span></div>
+      ${bill.length?bill.map(b=>`<div class="act" style="color:#dbe2ec"><b style="color:var(--blue);width:38px">${b.date}</b>
+        ${esc(b.client)} · ${esc(b.item.slice(0,14))}<span class="t" style="color:#fff;font-weight:700">${b.amount}만</span></div>`).join('')
+        :`<div style="font-size:11.5px;color:var(--dark-panel-sub);padding:10px 0">${OP.l} 기간에 잡힌 일정이 없습니다.</div>`}
     </div></div>
   <div class="card pad" style="margin-top:20px"><div class="ch"><h3>연계 프로젝트 관리</h3>
-    <span class="pill">연계 ${core.children.length}건</span>
-    <div class="seg" style="margin-left:auto"><button class="on">전체</button><button>후속수주</button><button>파생</button><button>공동수행</button></div></div>
+    <span class="pill">연계 ${(LINKF==='전체'?core.children:core.children.filter(c=>c.kind===LINKF)).length}건</span>
+    <div class="seg" style="margin-left:auto">${['전체','후속수주','파생','공동수행'].map(k=>
+      `<button class="${LINKF===k?'on':''}" onclick="setLinkF('${k}')">${k}</button>`).join('')}</div></div>
     <div class="tree">
       <div><div style="font-size:11px;color:var(--muted);margin-bottom:8px">선행 · 기반 사업</div>
         ${DATA.links.filter(l=>l.from).map(l=>`<div class="tn"><b>${esc(l.from)}</b>
@@ -740,7 +821,7 @@ function vOrders(){
             <span class="r" style="color:var(--red)">${ddayTxt(P[core.core].due)}</span></div></div></div>
       <div class="conn"></div>
       <div><div style="font-size:11px;color:var(--muted);margin-bottom:8px">후속 · 파생</div>
-        ${core.children.map(c=>`<div class="tn"><span class="kind" style="background:${kindColor[c.kind]}">${c.kind}</span>
+        ${(LINKF==='전체'?core.children:core.children.filter(c=>c.kind===LINKF)).map(c=>`<div class="tn"><span class="kind" style="background:${kindColor[c.kind]}">${c.kind}</span>
           <b>${esc(c.name)}</b><p>${esc(c.client)}</p>
           <div class="bt">${av(c.owner,17)}${esc(M[c.owner].name)}<span class="r">${esc(c.meta)}</span></div></div>`).join('')}</div>
     </div>
@@ -748,8 +829,39 @@ function vOrders(){
       연계 유형 <span><em style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green)"></em> 파생 · 동일 발주처 확장</span>
       <span><em style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--amber)"></em> 후속수주 · 차년도 연장</span>
       <span><em style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--violet)"></em> 공동수행 · 컨소시엄</span>
-      <span style="margin-left:auto;color:var(--blue);font-weight:600">+ 연계 등록</span></div>
+      <span style="margin-left:auto;color:var(--blue);font-weight:600;cursor:pointer"
+   onclick="toast('연계 등록은 board.json 의 links 를 고칩니다 — 클로드에게 말씀하세요')">+ 연계 등록</span></div>
   </div>`;
+}
+
+function vSearch(){
+  const q=QUERY.toLowerCase();
+  const pr=DATA.projects.filter(p=>(p.name+p.client+p.sector).toLowerCase().includes(q));
+  const ts=DATA.tasks.filter(t=>(t.title+t.tag+P[t.p].name+M[t.a].name).toLowerCase().includes(q));
+  const un=DATA.unassigned.filter(u=>u.title.toLowerCase().includes(q));
+  const n=pr.length+ts.length+un.length;
+  return `<div class="card pad" style="margin-bottom:18px">
+    <div class="ch"><h3>검색 · "${esc(QUERY)}"</h3><span class="pill">${n}건</span>
+      <button class="btn sec" style="margin-left:auto;padding:7px 14px;font-size:12px"
+        onclick="QUERY='';render()">검색 지우기</button></div>
+    ${n?'':'<div class="empty">일치하는 항목이 없습니다.</div>'}</div>
+  ${pr.length?`<div class="card pad" style="margin-bottom:18px"><div class="ch"><h3>프로젝트</h3><span class="pill">${pr.length}</span></div>
+    <table><tbody>${pr.map(p=>`<tr onclick="location.hash='#/project/${p.id}'" style="cursor:pointer">
+      <td><div class="pn"><span class="tick" style="background:${M[p.owner].color}"></span>
+        <span><b>${esc(p.name)}</b><span>${esc(p.client)} · ${esc(p.sector)}</span></span></div></td>
+      <td><div class="pg"><div class="bar"><i style="width:${p.progress}%;background:${tone(p.status)}"></i></div><span>${p.progress}%</span></div></td>
+      <td style="text-align:right"><span class="bd ${p.status}">${p.status}</span></td></tr>`).join('')}</tbody></table></div>`:''}
+  ${ts.length?`<div class="card pad" style="margin-bottom:18px"><div class="ch"><h3>업무</h3><span class="pill">${ts.length}</span></div>
+    <table><tbody>${ts.map(t=>`<tr>
+      <td><b style="font-weight:600">${esc(t.title)}</b>
+        <span style="display:block;font-size:10.5px;color:var(--muted);margin-top:2px">${esc(P[t.p].name)} · ${esc(t.tag)}</span></td>
+      <td><div class="who">${av(t.a)}${esc(M[t.a].name)}</div></td>
+      <td><span class="bd ${t.status}" style="cursor:pointer" onclick="cycleStatus('${t.id}')">${t.status}</span></td>
+      <td style="text-align:right"><span class="dday ${dday(t.due)<=2&&t.status!=='완료'?'urg':''}">${t.status==='완료'?'—':ddayTxt(t.due)}</span></td>
+    </tr>`).join('')}</tbody></table></div>`:''}
+  ${un.length?`<div class="card pad"><div class="ch"><h3>담당자 미지정</h3><span class="pill" style="background:var(--red-soft);color:var(--red)">${un.length}</span></div>
+    ${un.map(u=>`<div class="li"><span class="chk"></span>${esc(u.title)}
+      <button class="btn" style="margin-left:auto;padding:6px 13px;font-size:11.5px" onclick="openModal('${u.p}','${esc(u.title)}')">지정</button></div>`).join('')}</div>`:''}`;
 }
 
 /* ---------- router ---------- */
@@ -764,8 +876,10 @@ function render(){
   const h=(location.hash||'#/dashboard').slice(2).split('/');
   const v=document.getElementById('view');
   const now='2026. 08. 01 (토) · 남실장';
-  const seg=`<div class="seg"><button>일간</button><button class="on">주간</button><button>월간</button></div>
-    <div class="search"><span class="o"></span>업무 · 프로젝트 검색</div>
+  const seg=`<div class="seg">${[['day','일간'],['week','주간'],['month','월간']].map(([k,l])=>
+      `<button class="${PERIOD===k?'on':''}" onclick="setPeriod('${k}')">${l}</button>`).join('')}</div>
+    <div class="search"><span class="o"></span><input id="q" value="${esc(QUERY)}" placeholder="업무 · 프로젝트 검색"
+      oninput="clearTimeout(window._q);window._q=setTimeout(()=>doSearch(this.value),300)"></div>
     <div class="stack">${DATA.members.slice(0,4).map(m=>`<span class="av" style="background:${m.color}"></span>`).join('')}</div>
     <button class="btn" onclick="openModal()">+ 업무 등록</button>`;
   if(h[0]==='project'&&h[1]) { v.innerHTML=header('','',''); v.innerHTML=vProject(h[1]);
@@ -779,6 +893,7 @@ function render(){
     report:()=>header('리포트','일간 요약보고 · 처리량 · 활동 로그',seg)+vReport(),
     orders:()=>header('업체별 수주현황 · 연계 프로젝트','거래처별 수주·수금 · 선행/핵심/후속 연계 맵',seg)+vOrders()
   };
+  if(QUERY){ v.innerHTML=header('검색 결과','업무 · 프로젝트 · 미지정 항목에서 찾습니다',seg)+vSearch(); return; }
   v.innerHTML=(map[h[0]]||map.dashboard)();
   window.scrollTo(0,0);
 }
