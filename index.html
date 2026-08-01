@@ -632,7 +632,7 @@ function vProject(id){
       <button class="tgl" onclick="toggleTheme()" title="라이트 / 다크"><i></i></button></div></div>
   <div class="nxtbox"><b>해야 할 일</b><span>${esc(p.next||'확인 필요')}</span></div>
   ${kpiRow([
-    {label:'전체 진행률',value:p.progress,unit:'%',pct:p.progress,foot:'계획 대비 +4%p'},
+    {label:'전체 진행률',value:p.progress,unit:'%',pct:p.progress,foot:esc(p.progressNote||'근거 확인 필요')},
     {label:'완료 업무',value:ts.filter(t=>t.status==='완료').length,unit:`/ ${ts.length}건`,pct:ts.length?Math.round(ts.filter(t=>t.status==='완료').length/ts.length*100):0,foot:'금주 기준'},
     {label:'잔여 기간',value:Math.max(0,dday(p.due)),unit:'일',pct:60,foot:`기한 ${p.due.slice(5).replace('-','.')}`},
     {label:'투입 인원',value:p.team.length,unit:'명',pct:100,color:'var(--violet)',foot:p.team.map(t=>M[t].name).join(' · ')}
