@@ -53,6 +53,10 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
 .me .av{width:38px;height:38px;border-radius:50%;background:var(--blue);flex:0 0 38px}
 .me .nm{font-size:14px;font-weight:700}
 .me .rl{font-size:10.5px;color:var(--sbmuted);margin-top:2px}
+.me .sw{margin-left:auto;font-size:10.5px;color:#fff;background:rgba(255,255,255,.14);
+  border-radius:8px;padding:5px 10px;align-self:flex-start}
+.me .demo{margin-top:12px;background:rgba(245,166,35,.16);color:#f5a623;border-radius:9px;
+  padding:8px 11px;font-size:10.5px;font-weight:600}
 .me .stats{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
 .me .st{background:rgba(255,255,255,.05);border-radius:11px;padding:9px 11px}
 .me .st b{font-size:17px;font-weight:800;display:block}
@@ -294,7 +298,7 @@ html[data-theme="dark"] .opts.dk button.on{background:var(--blue)}
 .mf{display:flex;align-items:center;gap:10px;margin-top:24px;padding-top:18px;border-top:1px solid var(--line)}
 .mf small{font-size:11px;color:var(--muted)}
 .mf .sp{margin-left:auto}
-#whobar{margin:0 20px 14px;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.06);
+#whobar{display:none;margin:0 20px 14px;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.06);
   border-radius:11px;padding:9px 12px;font-size:12px;color:#fff}
 #whobar b{font-weight:700}
 #whobar span{font-size:10.5px;color:var(--sbmuted)}
@@ -351,11 +355,7 @@ html[data-theme="dark"] .opts.dk button.on{background:var(--blue)}
 <div class="app">
   <aside class="sb">
     <div class="brand"><div class="dot"></div><div><h1>HAYDAY</h1><p>Work Management</p></div></div>
-    <div class="me">
-      <div class="row"><div class="av"></div><div><div class="nm">남실장</div><div class="rl">기획·디자인 총괄</div></div></div>
-      <div class="stats"><div class="st"><b id="s-proj">0</b><span>담당 프로젝트</span></div><div class="st"><b id="s-task">0</b><span>진행 업무</span></div></div>
-    </div>
-    <div id="whobar"></div>
+    <div class="me" id="mecard"></div>
     <nav class="nav" id="nav"></nav>
     <hr>
     <div class="team">
@@ -449,12 +449,21 @@ function sidebar(){
     `<div class="mem"><span class="av ${m.kind==='ai'?'ai':''}" style="background:${m.color}"></span>
      <div><div class="nm">${esc(m.name)}</div><div class="rl">${esc(m.role)}</div></div>
      <span class="cnt">${m.load}</span></div>`).join('');
-  const act = DATA.projects.filter(p=>p.status!=='완료');
-  document.getElementById('s-proj').textContent = act.length;
-  document.getElementById('s-task').textContent = DATA.tasks.filter(t=>t.status==='진행중').length;
+  const me = M[ME];
+  const mine = DATA.tasks.filter(t=>t.a===ME);
+  const myProj = new Set(DATA.projects.filter(p=>p.owner===ME||p.team.includes(ME)).map(p=>p.id));
+  mine.forEach(t=>myProj.add(t.p));
+  document.getElementById('mecard').innerHTML = me ? `
+    <div class="row"><div class="av" style="background:${me.color}"></div>
+      <div><div class="nm">${esc(me.name)}</div><div class="rl">${esc(me.role)}</div></div>
+      ${MODE!=='static'?`<button class="sw" onclick="switchMe()">전환</button>`:''}</div>
+    <div class="stats">
+      <div class="st"><b>${myProj.size}</b><span>담당 프로젝트</span></div>
+      <div class="st"><b>${mine.filter(t=>t.status==='진행중').length}</b><span>진행 업무</span></div></div>
+    ${MODE==='static'?'<div class="demo">데모 모드 · 저장되지 않습니다</div>':''}` : '';
   document.getElementById('s-mem').textContent = DATA.members.length+'명';
   document.getElementById('s-urg').textContent =
-    DATA.tasks.filter(t=>t.status!=='완료'&&dday(t.due)<=2).length+'건의 업무 확인 필요';
+    mine.filter(t=>t.status!=='완료'&&dday(t.due)<=2).length+'건의 업무 확인 필요';
 }
 
 /* ---------- shared blocks ---------- */
@@ -966,7 +975,7 @@ function render(){
   sidebar();
   const h=(location.hash||'#/dashboard').slice(2).split('/');
   const v=document.getElementById('view');
-  const now='2026. 08. 01 (토) · 남실장';
+  const now=`${fmtD(TODAY)} (${'일월화수목금토'[TODAY.getDay()]}) · ${M[ME]?M[ME].name:''}`;
   const seg=`<div class="seg">${[['day','일간'],['week','주간'],['month','월간']].map(([k,l])=>
       `<button class="${PERIOD===k?'on':''}" onclick="setPeriod('${k}')">${l}</button>`).join('')}</div>
     <div class="search"><span class="o"></span><input id="q" value="${esc(QUERY)}" placeholder="업무 · 프로젝트 검색"
@@ -1172,20 +1181,12 @@ async function push(action,payload){
 }
 
 /* ---------- 기입자 ---------- */
-function whoBar(){
-  const el=document.getElementById('whobar');
-  if(MODE==='static'){ el.innerHTML='<b>데모 모드</b><span>저장되지 않습니다</span>'; el.classList.add('demo'); return; }
-  el.classList.remove('demo');
-  const me=M[ME];
-  el.innerHTML = `<b>${me?esc(me.name):'?'}</b><span>기입자</span>
-    <button onclick="switchMe()">전환</button>`;
-}
 function switchMe(){
   const humans=DATA.members.filter(m=>m.kind==='human');
   const i=humans.findIndex(m=>m.id===ME);
   ME=humans[(i+1)%humans.length].id;
   try{localStorage.setItem('hd-me',ME);}catch(e){}
-  whoBar(); render();
+  render();
 }
 function tokenGate(err){
   document.getElementById('gate').innerHTML =
@@ -1225,14 +1226,14 @@ function pickMeFirst(){
 function setMe(id){
   ME=id; try{localStorage.setItem('hd-me',id);}catch(e){}
   document.getElementById('gate').classList.remove('on');
-  whoBar(); render();
+  render();
 }
 
 function afterLoad(){
   try{ ME = localStorage.getItem('hd-me'); }catch(e){}
   if(!(ME && M[ME] && M[ME].kind==='human')) ME=null;
   if(MODE==='static') ME = (DATA.members.find(m=>m.kind==='human')||DATA.members[0]).id;
-  render(); whoBar();
+  render();
   if(MODE!=='static' && !ME) pickMeFirst();
   if(MODE!=='static' && !POLLING){ POLLING=true; setInterval(pull, MODE==='gh'?15000:6000); }
 }
