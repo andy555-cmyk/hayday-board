@@ -316,6 +316,25 @@ html[data-theme="dark"] .opts.dk button.on{background:var(--blue)}
 .tc:hover{border-color:var(--blue)}
 .li .chk{cursor:pointer}
 .by{font-size:10px;color:var(--muted);margin-left:6px}
+.ptabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.ptab{display:flex;align-items:center;gap:8px;background:var(--card);border:1.5px solid var(--line);
+  border-radius:22px;padding:8px 15px 8px 10px;font-size:12.5px;transition:.15s}
+.ptab:hover{border-color:var(--blue)}
+.ptab.on{border-color:var(--blue);background:var(--blue);color:#fff;font-weight:600}
+.ptab.on .cnt{background:rgba(255,255,255,.25);color:#fff}
+.ptab .cnt{font-size:10.5px;background:var(--inset);color:var(--txt2);border-radius:7px;padding:2px 7px}
+.ptab .all{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#1b63f5,#23a18f,#f5a623);flex:none}
+.psec{margin-bottom:22px}
+.psec > b{display:block;font-size:12.5px;font-weight:700;margin-bottom:10px}
+.pline{display:flex;align-items:flex-start;gap:9px;padding:7px 0;font-size:12.5px;border-bottom:1px solid var(--line)}
+.pline:last-child{border-bottom:0}
+.pline em{width:6px;height:6px;border-radius:50%;font-style:normal;flex:none;margin-top:6px}
+.pline .p{font-size:10.5px;color:var(--muted);margin-left:auto;white-space:nowrap}
+.pcard{background:var(--inset);border-radius:14px;padding:16px 18px;margin-bottom:14px}
+.pcard .ph2{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.pcard .ph2 b{font-size:13.5px}
+.pcard .ph2 small{font-size:10.5px;color:var(--muted)}
+.pcard .ph2 .st{margin-left:auto;font-size:11px;color:var(--txt2)}
 .toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);background:#111418;color:#fff;
   padding:13px 22px;border-radius:12px;font-size:13px;opacity:0;transition:.22s;z-index:99;pointer-events:none}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -390,6 +409,7 @@ let ORDP   = 'half';                      // quarter | half | year
 let QUERY  = '';                          // 검색어
 let BOARDVIEW = 'board';                  // board | list | gantt
 let LINKF  = '전체';                       // 연계 필터
+let RPERSON = 'all';                      // 리포트 담당자 탭
 const ymd = d => d.toISOString().slice(0,10);
 function periodRange(){
   const t = TODAY;
@@ -410,6 +430,7 @@ function setPeriod(p){ PERIOD=p; render(); }
 function setOrdP(p){ ORDP=p; render(); }
 function setBoardView(v){ BOARDVIEW=v; render(); }
 function setLinkF(v){ LINKF=v; render(); }
+function setRPerson(v){ RPERSON=v; render(); }
 function doSearch(v){ QUERY=v.trim(); render(); if(QUERY){ const i=document.getElementById('q'); if(i){i.focus(); i.setSelectionRange(i.value.length,i.value.length);} } }
 const tone = st => st==='지연'?'var(--red)':st==='완료'?'var(--muted)':st==='검수중'?'var(--green)':'var(--blue)';
 const fmt = n => n.toLocaleString('ko-KR');
@@ -722,39 +743,100 @@ function vAssign(){
 }
 
 function vReport(){
-  const T=DATA.tasks, done=T.filter(t=>t.status==='완료'), run=T.filter(t=>t.status==='진행중');
-  const byMem={}; T.forEach(t=>byMem[t.a]=(byMem[t.a]||0)+1);
-  return `${kpiRow([
-    {label:'금주 완료',value:done.length,unit:'건',pct:100,foot:'AI 자동 집계'},
-    {label:'금주 진행',value:run.length,unit:'건',pct:70,foot:'담당자 6명'},
-    {label:'지연',value:T.filter(t=>t.status==='지연').length,unit:'건',pct:15,color:'var(--red)',foot:'즉시 조치'},
-    {label:'AI 처리분',value:T.filter(t=>M[t.a].kind==='ai').length,unit:'건',pct:40,color:'var(--amber)',foot:'에이전트 3기'}
-  ])}
-  <div class="cols">
-    <div class="card pad"><div class="ch"><h3>일일 요약 보고서</h3>
-      <span style="font-size:11.5px;color:var(--muted)">2026. 08. 01 (토)</span>
-      <span class="more" style="color:var(--blue);font-weight:600">PDF 내보내기</span></div>
-      <div style="font-size:13px;line-height:1.85;color:var(--txt2)">
-        <b style="color:var(--txt)">■ 오늘 한 것</b><br>
-        ${done.filter(t=>t.end==='2026-08-01').map(t=>`· ${esc(t.title)} <span style="color:var(--muted)">(${esc(M[t.a].name)})</span>`).join('<br>')||'· —'}
-        <br><br><b style="color:var(--txt)">■ 진행 중</b><br>
-        ${run.slice(0,5).map(t=>`· ${esc(t.title)} <span style="color:var(--muted)">(${esc(M[t.a].name)} · ${ddayTxt(t.due)})</span>`).join('<br>')}
-        <br><br><b style="color:var(--txt)">■ 대표 조치 필요</b><br>
-        ${DATA.unassigned.slice(0,4).map(u=>`· ${esc(u.title)}`).join('<br>')}
+  const r=periodRange(), T=periodTasks();
+  const pl={day:'일간',week:'주간',month:'월간'}[PERIOD];
+  const dayLabel={day:'오늘',week:'이번 주',month:'이번 달'}[PERIOD];
+  const of=id=>T.filter(t=>t.a===id);
+  const cnt=id=>of(id).filter(t=>t.status==='완료').length;
+
+  const tabs=`<div class="ptabs">
+    <button class="ptab ${RPERSON==='all'?'on':''}" onclick="setRPerson('all')">
+      <span class="all"></span>전체 종합<span class="cnt">${T.length}</span></button>
+    ${DATA.members.map(m=>`<button class="ptab ${RPERSON===m.id?'on':''}" onclick="setRPerson('${m.id}')">
+      ${av(m.id,22)}${esc(m.name)}<span class="cnt">${of(m.id).length}</span></button>`).join('')}
+  </div>`;
+
+  const line=t=>`<div class="pline"><em style="background:${tone(t.status)}"></em>
+    <span>${esc(t.title)}</span><span class="p">${esc(P[t.p].name.replace(/\s*\(.*?\)/,'').slice(0,12))}
+    ${t.status==='완료'?'':' · '+ddayTxt(t.due)}</span></div>`;
+
+  /* ── 개인 탭 ───────────────────────────────── */
+  if(RPERSON!=='all'){
+    const m=M[RPERSON], list=of(RPERSON);
+    const g=st=>list.filter(t=>st==='대기'?(t.status==='대기'||t.status==='지연'):t.status===st);
+    const acts=DATA.activity.filter(a=>a.who===RPERSON);
+    return tabs+kpiRow([
+      {label:dayLabel+' 완료',value:g('완료').length,unit:'건',pct:100,foot:esc(m.name)+' · '+esc(m.role)},
+      {label:'진행중',value:g('진행중').length,unit:'건',pct:60,foot:'작업 중'},
+      {label:'검수중',value:g('검수중').length,unit:'건',pct:40,color:'var(--green)',foot:'확인 대기'},
+      {label:'대기 · 지연',value:g('대기').length,unit:'건',pct:30,color:'var(--red)',
+       foot:list.filter(t=>t.status==='지연').length?'지연 '+list.filter(t=>t.status==='지연').length+'건':'착수 전'}
+    ])+`<div class="cols">
+      <div class="card pad">
+        <div class="ch">${av(RPERSON,30)}<div><h3 style="display:inline">${esc(m.name)}</h3>
+          <span style="display:block;font-size:10.5px;color:var(--muted)">${esc(m.role)}${m.kind==='ai'?' · AI 직원':''}</span></div>
+          <span class="pill" style="margin-left:auto">${periodRange().label}</span></div>
+        ${list.length?['완료','진행중','검수중','대기'].map(st=>{
+          const ls=g(st); if(!ls.length) return '';
+          return `<div class="psec"><b>${st==='대기'?'대기 · 지연':st} <span style="color:var(--muted);font-weight:400">${ls.length}건</span></b>
+            ${ls.map(line).join('')}</div>`;
+        }).join(''):`<div class="empty">${dayLabel} 배정된 업무가 없습니다.</div>`}
       </div>
-      <div style="margin-top:18px;padding:13px 15px;background:var(--blue-soft);border-radius:12px;font-size:11.5px;color:var(--blue);line-height:1.6">
-        이 보고서는 <b>board.json</b>에서 자동 생성됩니다. 클로드에게 “오늘 작업한 거 대시보드에 올려라”라고 지시하면
-        board.json이 갱신되고 이 화면이 그대로 바뀝니다.</div>
+      <div class="dp">
+        <div class="ch"><h3>활동 로그</h3><span class="pill" style="margin-left:auto">${acts.length}</span></div>
+        ${acts.length?acts.slice(0,12).map(a=>`<div class="act" style="color:#dbe2ec">
+          <em style="background:${m.color}"></em>${esc(a.text.length>26?a.text.slice(0,26)+'…':a.text)}
+          <span class="t" style="color:var(--dark-panel-sub)">${esc(a.when)}</span></div>`).join('')
+          :`<div style="font-size:12px;color:var(--dark-panel-sub);padding:12px 0">기록된 활동이 없습니다.</div>`}
+        <hr>
+        <div style="font-size:12.5px;font-weight:600;margin-bottom:10px">참여 프로젝트</div>
+        ${[...new Set(list.map(t=>t.p))].map(pid=>`<div class="act" style="color:#dbe2ec">
+          <em style="background:${tone(P[pid].status)}"></em>${esc(P[pid].name.slice(0,18))}
+          <span class="t" style="color:#fff;font-weight:700">${of(RPERSON).filter(t=>t.p===pid).length}건</span></div>`).join('')
+          ||'<div style="font-size:12px;color:var(--dark-panel-sub)">—</div>'}
+      </div></div>`;
+  }
+
+  /* ── 전체 종합 탭 ───────────────────────────── */
+  const done=T.filter(t=>t.status==='완료'), run=T.filter(t=>t.status==='진행중');
+  const late=T.filter(t=>t.status==='지연');
+  const urgent=T.filter(t=>t.status!=='완료'&&dday(t.due)<=3);
+  return tabs+kpiRow([
+    {label:dayLabel+' 완료',value:done.length,unit:'건',pct:100,foot:'담당자 '+DATA.members.length+'명 합계'},
+    {label:'진행중',value:run.length,unit:'건',pct:70,foot:'작업 중'},
+    {label:'지연',value:late.length,unit:'건',pct:20,color:'var(--red)',foot:late.length?'즉시 조치':'없음'},
+    {label:'AI 처리분',value:T.filter(t=>M[t.a].kind==='ai').length,unit:'건',pct:40,color:'var(--amber)',foot:'에이전트 3기'}
+  ])+`<div class="cols">
+    <div class="card pad">
+      <div class="ch"><h3>${pl} 요약 보고서</h3>
+        <span style="font-size:11.5px;color:var(--muted)">${periodRange().label}</span>
+        <span class="more" style="color:var(--blue);font-weight:600;cursor:pointer"
+          onclick="toast('인쇄 대화상자에서 PDF로 저장하세요');window.print()">PDF 내보내기</span></div>
+      ${DATA.members.filter(m=>of(m.id).length).map(m=>{
+        const l=of(m.id), d=l.filter(t=>t.status==='완료'), o=l.filter(t=>t.status!=='완료');
+        return `<div class="pcard"><div class="ph2">${av(m.id,26)}
+          <div><b>${esc(m.name)}</b> <small>${esc(m.role)}${m.kind==='ai'?' · AI':''}</small></div>
+          <span class="st">완료 <b style="color:var(--txt)">${d.length}</b> · 남음 ${o.length}</span></div>
+          ${d.length?`<div class="psec"><b>한 것</b>${d.map(line).join('')}</div>`:''}
+          ${o.length?`<div class="psec" style="margin-bottom:0"><b>남은 것</b>${o.slice(0,5).map(line).join('')}
+            ${o.length>5?`<div class="pline" style="color:var(--muted)"><em style="background:var(--muted)"></em>외 ${o.length-5}건 — <span style="color:var(--blue);cursor:pointer" onclick="setRPerson('${m.id}')">${esc(m.name)} 탭에서 전체보기</span></div>`:''}</div>`:''}
+        </div>`;}).join('')||'<div class="empty">이 기간에 기록된 업무가 없습니다.</div>'}
+      <div style="margin-top:6px;padding:13px 15px;background:var(--blue-soft);border-radius:12px;font-size:11.5px;color:var(--blue);line-height:1.6">
+        이 보고서는 <b>board.json</b>에서 자동 생성됩니다. 각 채팅방이 적재함에 한 줄씩 남기면
+        매일 밤 자동으로 반영되고 이 화면이 그대로 바뀝니다.</div>
     </div>
-    <div class="dp"><div class="ch"><h3>담당자별 처리량</h3><span class="pill" style="margin-left:auto">주간</span></div>
-      <div class="big">${T.length}<small>건 처리</small></div>
-      <div class="segbar">${DATA.members.map(m=>`<i style="flex:${byMem[m.id]||0.4};background:${m.color}"></i>`).join('')}</div>
-      <div class="lg">${DATA.members.map(m=>`<span><em style="background:${m.color}"></em>${esc(m.name)} ${byMem[m.id]||0}</span>`).join('')}</div>
-      <hr>
-      <div style="font-size:12.5px;font-weight:600;margin-bottom:12px">최근 활동 로그</div>
-      ${DATA.activity.map(a=>`<div class="act" style="color:#dbe2ec"><em style="background:${M[a.who].color}"></em>
-        ${esc(M[a.who].name)} · ${esc(a.text.length>24?a.text.slice(0,24)+'…':a.text)}
-        <span class="t" style="color:var(--dark-panel-sub)">${esc(a.when)}</span></div>`).join('')}
+    <div class="dp">
+      <div class="ch"><h3>대표 조치 필요</h3>
+        <span class="pill" style="margin-left:auto;background:var(--red);color:#fff">${urgent.length+DATA.unassigned.length}</span></div>
+      ${urgent.length?`<div style="font-size:11px;color:var(--dark-panel-sub);margin-bottom:10px">기한 3일 이내</div>
+        ${urgent.map(t=>`<div class="uz"><div><b>${esc(t.title.length>24?t.title.slice(0,24)+'…':t.title)}</b>
+          <span>${esc(M[t.a].name)} · ${esc(P[t.p].name.slice(0,14))}</span></div>
+          <span style="margin-left:auto;font-weight:700;color:${dday(t.due)<=1?'#ff5a5a':'#fff'}">${ddayTxt(t.due)}</span></div>`).join('')}`:''}
+      ${DATA.unassigned.length?`<hr><div style="font-size:11px;color:var(--dark-panel-sub);margin-bottom:10px">담당자 미지정</div>
+        ${DATA.unassigned.map(u=>`<div class="uz"><div><b>${esc(u.title.length>24?u.title.slice(0,24)+'…':u.title)}</b>
+          <span>${esc(P[u.p].name.slice(0,16))}</span></div>
+          <button onclick="openModal('${u.p}','${esc(u.title)}')">지정</button></div>`).join('')}`:''}
+      ${!urgent.length&&!DATA.unassigned.length?'<div style="font-size:12px;color:var(--dark-panel-sub);padding:12px 0">조치할 항목이 없습니다.</div>':''}
     </div>
   </div>`;
 }
@@ -890,7 +972,7 @@ function render(){
     projects:()=>header('프로젝트','진행 중인 전 과업 · 진행률 · 기한',seg)+vProjects(),
     schedule:()=>header('스케줄','주간 타임라인 · 마감 · 마일스톤',seg)+vSchedule(),
     assign:()=>header('담당자 배정','사람 + AI 직원 통합 배정 현황',seg)+vAssign(),
-    report:()=>header('리포트','일간 요약보고 · 처리량 · 활동 로그',seg)+vReport(),
+    report:()=>header('리포트','담당자별 · 전체 종합 요약보고',seg)+vReport(),
     orders:()=>header('업체별 수주현황 · 연계 프로젝트','거래처별 수주·수금 · 선행/핵심/후속 연계 맵',seg)+vOrders()
   };
   if(QUERY){ v.innerHTML=header('검색 결과','업무 · 프로젝트 · 미지정 항목에서 찾습니다',seg)+vSearch(); return; }
