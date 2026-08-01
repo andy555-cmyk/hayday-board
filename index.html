@@ -752,7 +752,7 @@ function vReport(){
   const tabs=`<div class="ptabs">
     <button class="ptab ${RPERSON==='all'?'on':''}" onclick="setRPerson('all')">
       <span class="all"></span>전체 종합<span class="cnt">${T.length}</span></button>
-    ${DATA.members.map(m=>`<button class="ptab ${RPERSON===m.id?'on':''}" onclick="setRPerson('${m.id}')">
+    ${DATA.members.filter(m=>m.kind!=='ai').map(m=>`<button class="ptab ${RPERSON===m.id?'on':''}" onclick="setRPerson('${m.id}')">
       ${av(m.id,22)}${esc(m.name)}<span class="cnt">${of(m.id).length}</span></button>`).join('')}
   </div>`;
 
@@ -805,14 +805,14 @@ function vReport(){
     {label:dayLabel+' 완료',value:done.length,unit:'건',pct:100,foot:'담당자 '+DATA.members.length+'명 합계'},
     {label:'진행중',value:run.length,unit:'건',pct:70,foot:'작업 중'},
     {label:'지연',value:late.length,unit:'건',pct:20,color:'var(--red)',foot:late.length?'즉시 조치':'없음'},
-    {label:'AI 처리분',value:T.filter(t=>M[t.a].kind==='ai').length,unit:'건',pct:40,color:'var(--amber)',foot:'에이전트 3기'}
+    {label:'담당자 미지정',value:DATA.unassigned.length,unit:'건',pct:35,color:'var(--amber)',foot:'배정 대기'}
   ])+`<div class="cols">
     <div class="card pad">
       <div class="ch"><h3>${pl} 요약 보고서</h3>
         <span style="font-size:11.5px;color:var(--muted)">${periodRange().label}</span>
         <span class="more" style="color:var(--blue);font-weight:600;cursor:pointer"
           onclick="toast('인쇄 대화상자에서 PDF로 저장하세요');window.print()">PDF 내보내기</span></div>
-      ${DATA.members.filter(m=>of(m.id).length).map(m=>{
+      ${DATA.members.filter(m=>m.kind!=='ai'&&of(m.id).length).map(m=>{
         const l=of(m.id), d=l.filter(t=>t.status==='완료'), o=l.filter(t=>t.status!=='완료');
         return `<div class="pcard"><div class="ph2">${av(m.id,26)}
           <div><b>${esc(m.name)}</b> <small>${esc(m.role)}${m.kind==='ai'?' · AI':''}</small></div>
