@@ -409,7 +409,7 @@ html[data-theme="dark"] .opts.dk button.on{background:var(--blue)}
       <div><label>우선순위</label><div class="opts" id="f-prio">
         <button data-v="낮음">낮음</button><button data-v="보통">보통</button><button data-v="높음" class="on">높음</button></div></div>
       <div><label>관리 주기</label><div class="opts dk" id="f-cyc">
-        <button data-v="일간">일간</button><button data-v="주간" class="on">주간</button><button data-v="월간">월간</button></div></div>
+        <button data-v="일간">일간</button><button data-v="주간" class="on">7일</button><button data-v="월간">월간</button></div></div>
     </div></div>
     <div class="mf"><small>등록 시 담당자에게 알림이 전송됩니다</small>
       <button class="btn sec sp" onclick="closeModal()">취소</button>
@@ -450,14 +450,26 @@ function periodRange(){
     const a=new Date(t.getFullYear(),t.getMonth(),1), b=new Date(t.getFullYear(),t.getMonth()+1,0);
     return {s:a,e:b,n:b.getDate(),label:(t.getMonth()+1)+'월 · '+fmtD(a)+' ~ '+fmtD(b)};
   }
-  const off=(t.getDay()===0?6:t.getDay()-1);
-  const a=new Date(t); a.setDate(t.getDate()-off);
-  const b=new Date(a); b.setDate(a.getDate()+6);
-  return {s:a,e:b,n:7,label:fmtD(a)+' ~ '+fmtD(b)};
+  // 최근 7일 롤링 — 오늘을 끝으로 잡는다.
+  // 월~일 고정 주로 잡으면 월요일 아침마다 지난주 성과가 통째로 화면에서 사라진다(2026-08-03 실측).
+  const b=new Date(t);
+  const a=new Date(t); a.setDate(t.getDate()-6);
+  return {s:a,e:b,n:7,label:'최근 7일 · '+fmtD(a)+' ~ '+fmtD(b)};
 }
 const fmtD = d => `${d.getFullYear()}. ${String(d.getMonth()+1).padStart(2,'0')}. ${String(d.getDate()).padStart(2,'0')}`;
 function inRange(t,r){ return !(new Date(t.end+'T00:00:00') < r.s || new Date(t.start+'T00:00:00') > r.e); }
 function periodTasks(){ const r=periodRange(); return DATA.tasks.filter(t=>inRange(t,r)); }
+/* 최근 7일 일별 완료 건수 — 완료일(end) 기준. 지어낸 숫자를 쓰지 않는다 */
+function dailyDone(){
+  const out=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date(TODAY); d.setDate(TODAY.getDate()-i);
+    const key=ymd(d);
+    out.push({date:key.slice(5).replace('-','.'), wd:'일월화수목금토'[d.getDay()],
+              n:DATA.tasks.filter(t=>t.status==='완료'&&t.end===key).length});
+  }
+  return out;
+}
 function setPeriod(p){ PERIOD=p; render(); }
 function setOrdP(p){ ORDP=p; render(); }
 function setBoardView(v){ BOARDVIEW=v; render(); }
@@ -588,7 +600,7 @@ function vDashboard(){
   const T=periodTasks(), done=T.filter(t=>t.status==='완료').length,
         run=T.filter(t=>t.status==='진행중').length, late=T.filter(t=>t.status==='지연').length;
   const assigned=T.length, total=T.length+DATA.unassigned.length;
-  const pl={day:'오늘',week:'이번 주',month:'이번 달'}[PERIOD];
+  const pl={day:'오늘',week:'최근 7일',month:'이번 달'}[PERIOD];
   const byMem={}; T.forEach(t=>byMem[t.a]=(byMem[t.a]||0)+1);
   return siteRow(null)+kpiRow([
     {label:pl+' 전체 업무',value:total,unit:'건',pct:100,foot:`미지정 ${DATA.unassigned.length}건 포함`},
@@ -626,9 +638,9 @@ function vDashboard(){
     </div>
   </div>
   <div class="card pad" style="margin-bottom:20px">
-    <div class="ch"><h3>스케줄표 · ${{day:'일간',week:'주간',month:'월간'}[PERIOD]} 타임라인</h3>
+    <div class="ch"><h3>스케줄표 · ${{day:'일간',week:'최근 7일',month:'월간'}[PERIOD]} 타임라인</h3>
       <span style="font-size:11.5px;color:var(--muted)">${periodRange().label}</span>
-      <div class="seg" style="margin-left:auto">${[['day','일'],['week','주'],['month','월']].map(([k,l])=>
+      <div class="seg" style="margin-left:auto">${[['day','일'],['week','7일'],['month','월']].map(([k,l])=>
         `<button class="${PERIOD===k?'on':''}" onclick="setPeriod('${k}')">${l}</button>`).join('')}</div></div>
     ${timeline()}
   </div>
@@ -638,13 +650,16 @@ function vDashboard(){
       ${T.filter(t=>t.cycle==='일간').slice(0,5).map(t=>`<div class="li"><span class="chk ${t.status==='완료'?'on':''}" onclick="toggleDone('${t.id}')"></span>
         ${esc(t.title.length>20?t.title.slice(0,20)+'…':t.title)}<span class="tm">${t.due.slice(5).replace('-','.')}</span></div>`).join('')}
     </div>
-    <div class="card pad"><div class="ch"><h3>주간 · 목표 달성률</h3>
-      <span class="pill" style="margin-left:auto;background:var(--green-soft);color:var(--green)">${Math.round(done/total*100)}%</span></div>
-      <div class="wk">${[6,9,5,12,7,2,1].map((v,i)=>`<div class="b ${i===4?'on':''}"><i style="height:${v*7}px"></i><span>${'월화수목금토일'[i]}</span></div>`).join('')}</div>
+    <div class="card pad"><div class="ch"><h3>최근 7일 · 일별 완료</h3>
+      <span class="pill" style="margin-left:auto;background:var(--green-soft);color:var(--green)">${total?Math.round(done/total*100):0}%</span></div>
+      <div class="wk">${dailyDone().map((c,i,arr)=>{
+        const mx=Math.max(1,...arr.map(x=>x.n));
+        return `<div class="b ${i===arr.length-1?'on':''}" title="${c.date} · 완료 ${c.n}건">
+          <i style="height:${Math.round(6+c.n/mx*78)}px"></i><span>${c.wd}</span></div>`;}).join('')}</div>
       <div style="display:flex;justify-content:space-around;text-align:center;font-size:11px;color:var(--muted);margin-top:6px">
         <div><b style="display:block;font-size:15px;color:var(--txt)">${done}건</b>완료</div>
         <div><b style="display:block;font-size:15px;color:var(--txt)">${run}건</b>진행</div>
-        <div><b style="display:block;font-size:15px;color:var(--txt)">3건</b>회의</div></div>
+        <div><b style="display:block;font-size:15px;color:var(--txt)">${T.filter(t=>t.tag==='미팅').length}건</b>미팅</div></div>
     </div>
     <div class="card pad"><div class="ch"><h3>월간 · 마일스톤</h3><span class="pill" style="margin-left:auto">8월</span></div>
       ${DATA.milestonesGlobal.map(m=>`<div class="mst"><b>${m.date}</b>${esc(m.text)}
@@ -772,13 +787,13 @@ function vTasks(){
 
 function vSchedule(){
   return `<div class="card pad" style="margin-bottom:20px">
-    <div class="ch"><h3>${{day:'일간',week:'주간',month:'월간'}[PERIOD]} 타임라인</h3>
+    <div class="ch"><h3>${{day:'일간',week:'최근 7일',month:'월간'}[PERIOD]} 타임라인</h3>
       <span style="font-size:11.5px;color:var(--muted)">${periodRange().label}</span>
-      <div class="seg" style="margin-left:auto">${[['day','일'],['week','주'],['month','월']].map(([k,l])=>
+      <div class="seg" style="margin-left:auto">${[['day','일'],['week','7일'],['month','월']].map(([k,l])=>
         `<button class="${PERIOD===k?'on':''}" onclick="setPeriod('${k}')">${l}</button>`).join('')}</div></div>
     ${timeline()}</div>
   <div class="cols2">
-    <div class="card pad"><div class="ch"><h3>${{day:'오늘',week:'이번 주',month:'이번 달'}[PERIOD]} 마감</h3>
+    <div class="card pad"><div class="ch"><h3>${{day:'오늘',week:'최근 7일',month:'이번 달'}[PERIOD]} 마감</h3>
       <span class="pill" style="margin-left:auto">${periodTasks().filter(t=>t.status!=='완료').length}건</span></div>
       ${periodTasks().filter(t=>t.status!=='완료').sort((a,b)=>dday(a.due)-dday(b.due)).map(t=>
         `<div class="li"><span class="chk" onclick="toggleDone('${t.id}')"></span>${esc(t.title.length>26?t.title.slice(0,26)+'…':t.title)}
@@ -818,8 +833,8 @@ function vAssign(){
 
 function vReport(){
   const r=periodRange(), T=periodTasks();
-  const pl={day:'일간',week:'주간',month:'월간'}[PERIOD];
-  const dayLabel={day:'오늘',week:'이번 주',month:'이번 달'}[PERIOD];
+  const pl={day:'일간',week:'최근 7일',month:'월간'}[PERIOD];
+  const dayLabel={day:'오늘',week:'최근 7일',month:'이번 달'}[PERIOD];
   const of=id=>T.filter(t=>t.a===id);
   const cnt=id=>of(id).filter(t=>t.status==='완료').length;
 
@@ -1033,7 +1048,7 @@ function render(){
   const h=(location.hash||'#/dashboard').slice(2).split('/');
   const v=document.getElementById('view');
   const now=`${fmtD(TODAY)} (${'일월화수목금토'[TODAY.getDay()]}) · ${M[ME]?M[ME].name:''}`;
-  const seg=`<div class="seg">${[['day','일간'],['week','주간'],['month','월간']].map(([k,l])=>
+  const seg=`<div class="seg">${[['day','일간'],['week','7일'],['month','월간']].map(([k,l])=>
       `<button class="${PERIOD===k?'on':''}" onclick="setPeriod('${k}')">${l}</button>`).join('')}</div>
     <div class="search"><span class="o"></span><input id="q" value="${esc(QUERY)}" placeholder="업무 · 프로젝트 검색"
       oninput="clearTimeout(window._q);window._q=setTimeout(()=>doSearch(this.value),300)"></div>
@@ -1045,7 +1060,7 @@ function render(){
     dashboard:()=>header('업무관리 대시보드',now,seg)+vDashboard(),
     tasks:()=>header('업무관리','전체 업무 · 담당자 지정 · 우선순위 · 관리주기',seg)+vTasks(),
     projects:()=>header('프로젝트','진행 중인 전 과업 · 진행률 · 기한',seg)+vProjects(),
-    schedule:()=>header('스케줄','주간 타임라인 · 마감 · 마일스톤',seg)+vSchedule(),
+    schedule:()=>header('스케줄','최근 7일 타임라인 · 마감 · 마일스톤',seg)+vSchedule(),
     assign:()=>header('담당자 배정','사람 + AI 직원 통합 배정 현황',seg)+vAssign(),
     report:()=>header('리포트','담당자별 · 전체 종합 요약보고',seg)+vReport(),
     orders:()=>header('업체별 수주현황 · 연계 프로젝트','거래처별 수주·수금 · 선행/핵심/후속 연계 맵',seg)+vOrders()
