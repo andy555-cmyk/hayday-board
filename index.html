@@ -69,7 +69,7 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
 .nav a.on{background:var(--blue);color:#fff;font-weight:600}
 .nav a.on .ic{background:#fff}
 .sb hr{border:0;border-top:1px solid var(--sbline);margin:20px 24px}
-.team{padding:0 24px;flex:1}
+.team{padding:0 24px}
 .team .hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .team .hd b{font-size:11.5px;color:var(--sbmuted);font-weight:600}
 .team .hd i{font-size:11px;color:var(--blue);font-style:normal;font-weight:700}
@@ -81,6 +81,28 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
 .mem .rl{font-size:10px;color:var(--sbmuted);margin-top:1px}
 .mem .cnt{margin-left:auto;font-size:10.5px;color:var(--sbmuted);background:rgba(255,255,255,.06);
           border-radius:6px;padding:2px 7px}
+.qlk{padding:0 24px;flex:1}
+.qlk .hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.qlk .hd b{font-size:11.5px;color:var(--sbmuted);font-weight:600}
+.qlk .hd i{font-size:11px;color:var(--blue);font-style:normal;font-weight:700}
+.qlk .gp{font-size:9.5px;color:var(--sbmuted);letter-spacing:.04em;margin:9px 0 4px;font-weight:700}
+.qlk a{display:flex;align-items:center;gap:9px;padding:6px 8px;margin:0 -8px;border-radius:9px;
+       font-size:12px;font-weight:600;color:#e9edf5;transition:background .12s}
+.qlk a:hover{background:rgba(255,255,255,.07)}
+.qlk a .sq{width:20px;height:20px;border-radius:6px;flex:0 0 20px;display:flex;align-items:center;
+       justify-content:center;font-size:9.5px;font-weight:800;color:#fff;letter-spacing:-.02em}
+.qlk a .ex{margin-left:auto;font-size:10px;color:var(--sbmuted);opacity:0;transition:opacity .12s}
+.qlk a:hover .ex{opacity:1}
+.qlk a .lo{margin-left:auto;font-size:9px;color:var(--sbmuted);border:1px solid var(--sbline);
+       border-radius:5px;padding:1px 4px}
+.lnkrow{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.lnkrow a{display:inline-flex;align-items:center;gap:7px;background:var(--inset);border-radius:10px;
+       padding:8px 13px;font-size:12px;font-weight:600;color:var(--txt);border:1px solid transparent;
+       transition:border-color .12s,transform .12s}
+.lnkrow a:hover{border-color:var(--blue);transform:translateY(-1px)}
+.lnkrow a .sq{width:18px;height:18px;border-radius:5px;display:flex;align-items:center;
+       justify-content:center;font-size:9px;font-weight:800;color:#fff}
+.lnkrow a small{color:var(--muted);font-weight:500;font-size:11px}
 .sbcta{margin:20px 20px 0;background:var(--blue);border-radius:16px;padding:16px}
 .sbcta small{font-size:10.5px;opacity:.8;display:block}
 .sbcta b{font-size:14.5px;font-weight:700;display:block;margin:5px 0 12px}
@@ -362,6 +384,11 @@ html[data-theme="dark"] .opts.dk button.on{background:var(--blue)}
       <div class="hd"><b>팀 담당자</b><i id="s-mem">0명</i></div>
       <div id="memlist"></div>
     </div>
+    <hr>
+    <div class="qlk">
+      <div class="hd"><b>바로가기</b><i id="s-lnk">0곳</i></div>
+      <div id="qlinks"></div>
+    </div>
     <div class="sbcta">
       <small>금주 마감 임박</small><b id="s-urg">0건의 업무 확인 필요</b>
       <button onclick="location.hash='#/tasks'">바로 확인하기</button>
@@ -461,9 +488,38 @@ function sidebar(){
       <div class="st"><b>${myProj.size}</b><span>담당 프로젝트</span></div>
       <div class="st"><b>${mine.filter(t=>t.status==='진행중').length}</b><span>진행 업무</span></div></div>
     ${MODE==='static'?'<div class="demo">데모 모드 · 저장되지 않습니다</div>':''}` : '';
+  quicklinks();
   document.getElementById('s-mem').textContent = DATA.members.length+'명';
   document.getElementById('s-urg').textContent =
     mine.filter(t=>t.status!=='완료'&&dday(t.due)<=2).length+'건의 업무 확인 필요';
+}
+
+/* ---------- 바로가기 (board.json 의 sites) ----------
+   URL 을 코드에 박지 않는다. sites 를 고치면 사이드바·프로젝트 화면이 같이 바뀐다. */
+const SITECOLOR = {'회사':'#3b6cf5','운영':'#8b5cf6','자체 도구':'#12a35b','서비스':'#e0a413'};
+const sites = () => (DATA.sites||[]);
+const isLocal = u => /^https?:\/\/(localhost|127\.0\.0\.1)/.test(u);
+const siteSq = s => `<span class="sq" style="background:${SITECOLOR[s.group]||'#6b7280'}">${esc(s.name.slice(0,1))}</span>`;
+function quicklinks(){
+  const el=document.getElementById('qlinks'); if(!el) return;
+  const list=sites();
+  document.getElementById('s-lnk').textContent = list.length+'곳';
+  const groups=[...new Set(list.map(s=>s.group))];
+  el.innerHTML = groups.map(g=>`<div class="gp">${esc(g)}</div>`+
+    list.filter(s=>s.group===g).map(s=>
+      `<a href="${esc(s.url)}" target="_blank" rel="noopener" title="${esc(s.note||'')}\n${esc(s.url)}">
+        ${siteSq(s)}<span>${esc(s.name)}</span>
+        ${isLocal(s.url)?'<span class="lo">맥</span>':'<span class="ex">↗</span>'}</a>`).join('')
+  ).join('');
+}
+/* 프로젝트 화면용 — 그 프로젝트에 걸린 링크만 */
+function siteRow(pid){
+  const list = pid ? sites().filter(s=>s.p===pid) : sites();
+  if(!list.length) return '';
+  return `<div class="lnkrow">${list.map(s=>
+    `<a href="${esc(s.url)}" target="_blank" rel="noopener" title="${esc(s.url)}">
+      ${siteSq(s)}${esc(s.name)}${s.note?`<small>${esc(s.note)}</small>`:''}
+      ${isLocal(s.url)?'<small>맥 전용</small>':'<small>↗</small>'}</a>`).join('')}</div>`;
 }
 
 /* ---------- shared blocks ---------- */
@@ -534,7 +590,7 @@ function vDashboard(){
   const assigned=T.length, total=T.length+DATA.unassigned.length;
   const pl={day:'오늘',week:'이번 주',month:'이번 달'}[PERIOD];
   const byMem={}; T.forEach(t=>byMem[t.a]=(byMem[t.a]||0)+1);
-  return kpiRow([
+  return siteRow(null)+kpiRow([
     {label:pl+' 전체 업무',value:total,unit:'건',pct:100,foot:`미지정 ${DATA.unassigned.length}건 포함`},
     {label:'진행중',value:run,unit:'건',pct:total?Math.round(run/total*100):0,foot:`담당자 지정 ${assigned}건`},
     {label:'완료',value:done,unit:'건',pct:total?Math.round(done/total*100):0,color:'var(--green)',foot:`완료율 ${total?Math.round(done/total*100):0}%`},
@@ -631,6 +687,7 @@ function vProject(id){
       <button class="btn" onclick="openModal('${p.id}')">+ 업무 등록</button>
       <button class="tgl" onclick="toggleTheme()" title="라이트 / 다크"><i></i></button></div></div>
   <div class="nxtbox"><b>해야 할 일</b><span>${esc(p.next||'확인 필요')}</span></div>
+  ${siteRow(p.id)}
   ${kpiRow([
     {label:'전체 진행률',value:p.progress,unit:'%',pct:p.progress,foot:esc(p.progressNote||'근거 확인 필요')},
     {label:'완료 업무',value:ts.filter(t=>t.status==='완료').length,unit:`/ ${ts.length}건`,pct:ts.length?Math.round(ts.filter(t=>t.status==='완료').length/ts.length*100):0,foot:'금주 기준'},
