@@ -2,87 +2,20 @@
 <html lang="ko"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SIGMA 에이전트 현황</title>
+<title>SIGMA 에이전트</title>
+<meta http-equiv="refresh" content="2;url=https://gratify-chewable-reorder.ngrok-free.dev/">
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#0b0e1a;color:#dde;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
-     -webkit-font-smoothing:antialiased;line-height:1.6}
-.wrap{max-width:880px;margin:0 auto;padding:26px 18px 70px}
-h1{font-size:19px;margin:0 0 4px;letter-spacing:-.2px}
-.sub{font-size:12.5px;color:#8a8aa0;margin-bottom:18px}
-.age{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;padding:7px 13px;border-radius:20px;
-     background:#141a30;border:1px solid #232a44;margin-bottom:20px}
-.age .d{width:8px;height:8px;border-radius:50%;background:#22c55e}
-.age.stale{background:rgba(245,158,11,.10);border-color:rgba(245,158,11,.4);color:#ffd9a8}
-.age.stale .d{background:#f59e0b}
-.age.dead{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.4);color:#ffc4c4}
-.age.dead .d{background:#ef4444}
-.sum{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:#8a8aa0;margin:0 0 14px}
-.sum b{color:#dde;font-size:14px}
-.sec{font-size:11.5px;color:#8a8aa0;font-weight:800;letter-spacing:.6px;margin:26px 0 10px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:9px}
-.card{background:linear-gradient(180deg,#141a30,#10152a);border:1px solid #232a44;border-radius:12px;padding:11px 13px}
-.card .n{font-size:13.5px;font-weight:700;display:flex;align-items:center;gap:7px}
-.card .m{font-size:11px;color:#8a8aa0;margin-top:4px}
-.card .e{font-size:11px;color:#ff9b9b;margin-top:4px}
-.dot{width:7px;height:7px;border-radius:50%;flex:0 0 auto}
-.ok{background:#22c55e}.wk{background:#3b82f6}.er{background:#ef4444}.pa{background:#55556a}
-.chips{display:flex;gap:7px;flex-wrap:wrap}
-.chip{font-size:11.5px;background:#141a30;border:1px solid #232a44;border-radius:16px;padding:5px 12px;color:#a8a8bc}
-.li{font-size:12.5px;background:#10152a;border:1px solid #1e2440;border-radius:9px;padding:9px 12px;margin-bottom:6px;color:#c8c8da}
-.li span{font-size:10.5px;color:#8a8aa0;margin-left:6px}
-.foot{margin-top:34px;padding-top:16px;border-top:1px solid #1e2440;font-size:11.5px;color:#6a6a80;line-height:1.9}
-.foot a{color:#7aa2ff;text-decoration:none}
-.note{font-size:11.5px;color:#6a6a80;margin-top:8px}
-</style></head><body><div class="wrap">
-
-<h1>🤖 SIGMA 에이전트 현황</h1>
-<div class="sub">HayDay · 자동 갱신 (5분 주기) · 읽기 전용</div>
-
-<div class="age" id="age"><span class="d"></span><span id="ageTxt">—</span></div>
-
-<div class="sum">
-  <span><b>7</b> 명</span>
-  <span><b>0</b> 가동</span>
-  <span><b>7</b> 대기</span>
-  <span><b>0</b> 오류</span>
-  <span><b>4</b> 자동실행</span>
-  <span><b>2</b> 열린 업무</span>
-</div>
-
-<div class="sec">에이전트</div>
-<div class="grid"><div class="card"><div class="n"><span class="dot ok"></span>총괄</div><div class="m">Claude · 대기 · 80턴</div></div><div class="card"><div class="n"><span class="dot ok"></span>제안총괄</div><div class="m">Claude · 대기 · 60턴</div></div><div class="card"><div class="n"><span class="dot ok"></span>디자인검수</div><div class="m">Claude · 대기 · 40턴</div></div><div class="card"><div class="n"><span class="dot ok"></span>이미지</div><div class="m">Claude · 대기 · 40턴</div></div><div class="card"><div class="n"><span class="dot ok"></span>개발총괄</div><div class="m">Claude · 대기 · 40턴</div></div><div class="card"><div class="n"><span class="dot ok"></span>검수</div><div class="m">ChatGPT · 대기 · 40턴</div></div><div class="card"><div class="n"><span class="dot ok"></span>마케팅</div><div class="m">Claude · 대기 · 40턴</div></div></div>
-
-<div class="sec">자동실행 (루틴)</div>
-<div class="chips"><span class="chip">⏰ 나라장터 과업 스캔</span><span class="chip">⏰ 마감 감시</span><span class="chip">⏰ 지식 위생 점검</span><span class="chip">⏰ 정산 청구 감시</span></div>
-
-<div class="sec">열린 업무</div>
-<div class="li">나라장터 과업 스캔<span>blocked</span></div><div class="li">과업 문서 접수<span>backlog</span></div>
-
-<div class="foot">
-  기준 시각 <b id="stamp">2026-08-03 14:30</b><br>
-  이 페이지는 맥에서 5분마다 올라오는 <b>스냅샷</b>입니다. 실시간 화면이 아닙니다 —
-  맥이 꺼져 있으면 마지막 상태가 그대로 남습니다.<br>
-  <a href="./">← 업무관리 대시보드</a>&nbsp;·&nbsp;<a href="https://gratify-chewable-reorder.ngrok-free.dev/">자비스 실시간 화면 열기</a><div class="note">실시간 화면은 <b>맥이 켜져 있을 때만</b> 열립니다. 비밀번호가 필요하고, 처음 한 번 ngrok 안내 화면에서 <b>Visit Site</b> 를 누르셔야 합니다.</div>
-  <div class="note">문의 · 이승원</div>
-</div>
-
-<script>
-var ISO = "2026-08-03T14:30:01.040452+09:00";
-function tick(){
-  var s = Math.round((Date.now() - new Date(ISO).getTime())/1000);
-  var box = document.getElementById('age'), t = document.getElementById('ageTxt');
-  var txt;
-  if (s < 90)        txt = '방금 갱신됨';
-  else if (s < 3600) txt = Math.round(s/60) + '분 전 갱신';
-  else if (s < 86400)txt = Math.round(s/3600) + '시간 전 갱신';
-  else               txt = Math.round(s/86400) + '일 전 갱신';
-  box.className = 'age' + (s > 5400 ? ' dead' : (s > 1200 ? ' stale' : ''));
-  if (s > 5400)      txt += ' · 맥이 꺼져 있습니다';
-  else if (s > 1200) txt += ' · 갱신이 늦습니다';
-  t.textContent = txt;
-}
-tick(); setInterval(tick, 30000);
-setTimeout(function(){ location.reload(); }, 300000);
-</script>
+body{margin:0;background:#0b0e1a;color:#dde;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif;
+     display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center;line-height:1.8}
+.w{max-width:520px;padding:30px}
+h1{font-size:18px;margin:0 0 10px}
+p{font-size:13.5px;color:#8a8aa0;margin:6px 0}
+a{color:#7aa2ff;text-decoration:none;font-weight:700}
+</style></head><body><div class="w">
+<h1>🤖 SIGMA 에이전트</h1>
+<p>자비스 실시간 화면으로 이동합니다…</p>
+<p><a href="https://gratify-chewable-reorder.ngrok-free.dev/">지금 열기</a></p>
+<p style="margin-top:18px;font-size:12px">비밀번호가 필요합니다. 처음 한 번 ngrok 안내 화면에서 <b>Visit Site</b> 를 누르십시오.<br>
+맥이 꺼져 있으면 열리지 않습니다.</p>
+<p style="font-size:12px"><a href="./" style="color:#6a6a80">← 업무관리 대시보드</a></p>
 </div></body></html>
