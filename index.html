@@ -427,7 +427,10 @@ let DATA = {};
 let ME = null;                          // 현재 기입자 id
 let M = {}, P = {};
 function reindex(){ if(!DATA||!DATA.members) return; M=Object.fromEntries(DATA.members.map(m=>[m.id,m])); P=Object.fromEntries(DATA.projects.map(p=>[p.id,p])); }
-const TODAY = new Date(new Date().toISOString().slice(0,10)+'T00:00:00');
+/* ★ TODAY 는 '보는 사람의 로컬 날짜'다. toISOString() 은 UTC 라 한국(UTC+9)에서는
+   00:00~09:00 사이에 하루 전 날짜가 나온다. 그 시간대에 '오늘 한 일'이 통째로 사라진다.
+   2026-08-03 01:15 KST 실측으로 확인. UTC 로 되돌리지 마라. */
+const TODAY = (()=>{ const d=new Date(); return new Date(d.getFullYear(),d.getMonth(),d.getDate()); })();
 const NAV = [
   ['dashboard','대시보드'],['tasks','업무관리'],['projects','프로젝트'],
   ['schedule','스케줄'],['assign','담당자 배정'],['report','리포트'],['orders','수주 · 연계']
@@ -442,7 +445,8 @@ let QUERY  = '';                          // 검색어
 let BOARDVIEW = 'board';                  // board | list | gantt
 let LINKF  = '전체';                       // 연계 필터
 let RPERSON = 'all';                      // 리포트 담당자 탭
-const ymd = d => d.toISOString().slice(0,10);
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-`+
+                 `${String(d.getDate()).padStart(2,'0')}`;   // 로컬 기준. toISOString 금지(위 주석)
 function periodRange(){
   const t = TODAY;
   if(PERIOD==='day'){ return {s:new Date(t), e:new Date(t), n:1, label:fmtD(t)+' ('+'일월화수목금토'[t.getDay()]+')'}; }
@@ -847,12 +851,14 @@ function vReport(){
 
   const line=t=>`<div class="pline"><em style="background:${tone(t.status)}"></em>
     <span>${esc(t.title)}</span><span class="p">${esc(P[t.p].name.replace(/\s*\(.*?\)/,'').slice(0,12))}
-    ${t.status==='완료'?'':' · '+ddayTxt(t.due)}</span></div>`;
+    ${t.status==='완료'?' · '+(t.end||t.due).slice(5).replace('-','.'):' · '+ddayTxt(t.due)}</span></div>`;
 
   /* ── 개인 탭 ───────────────────────────────── */
   if(RPERSON!=='all'){
     const m=M[RPERSON], list=of(RPERSON);
-    const g=st=>list.filter(t=>st==='대기'?(t.status==='대기'||t.status==='지연'):t.status===st);
+    const srt=(a,b)=> a.status==='완료' ? (b.end||'').localeCompare(a.end||'')||a.title.localeCompare(b.title)
+                                       : (a.due||'').localeCompare(b.due||'');
+    const g=st=>list.filter(t=>st==='대기'?(t.status==='대기'||t.status==='지연'):t.status===st).slice().sort(srt);
     const acts=DATA.activity.filter(a=>a.who===RPERSON);
     return tabs+kpiRow([
       {label:dayLabel+' 완료',value:g('완료').length,unit:'건',pct:100,foot:esc(m.name)+' · '+esc(m.role)},
@@ -902,7 +908,9 @@ function vReport(){
         <span class="more" style="color:var(--blue);font-weight:600;cursor:pointer"
           onclick="toast('인쇄 대화상자에서 PDF로 저장하세요');window.print()">PDF 내보내기</span></div>
       ${DATA.members.filter(m=>m.kind!=='ai'&&of(m.id).length).map(m=>{
-        const l=of(m.id), d=l.filter(t=>t.status==='완료'), o=l.filter(t=>t.status!=='완료');
+        const srt2=(a,b)=>(b.end||'').localeCompare(a.end||'');
+        const l=of(m.id), d=l.filter(t=>t.status==='완료').slice().sort(srt2),
+              o=l.filter(t=>t.status!=='완료').slice().sort((a,b)=>(a.due||'').localeCompare(b.due||''));
         return `<div class="pcard"><div class="ph2">${av(m.id,26)}
           <div><b>${esc(m.name)}</b> <small>${esc(m.role)}${m.kind==='ai'?' · AI':''}</small></div>
           <span class="st">완료 <b style="color:var(--txt)">${d.length}</b> · 남음 ${o.length}</span></div>
