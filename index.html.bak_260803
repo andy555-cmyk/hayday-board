@@ -377,7 +377,6 @@ html[data-theme="dark"] .opts.dk button.on{background:var(--blue)}
 <div class="app">
   <aside class="sb">
     <div class="brand"><div class="dot"></div><div><h1>HAYDAY</h1><p>Work Management</p></div></div>
-    <a href="./agents.html" style="display:block;margin:10px 0 2px;padding:9px 11px;background:rgba(59,130,246,.10);border:1px solid rgba(59,130,246,.35);border-radius:9px;color:#9dbcff;font-size:12.5px;text-decoration:none">&#129302; SIGMA 에이전트 현황</a>
     <div class="me" id="mecard"></div>
     <nav class="nav" id="nav"></nav>
     <hr>
