@@ -463,8 +463,12 @@ html[data-theme="dark"] .opts.dk button.on{background:var(--blue)}
 .toast .tx:hover{background:rgba(255,255,255,.24)}
 .toast .tbar{position:absolute;left:0;bottom:0;height:2px;background:var(--blue);border-radius:0 0 14px 14px}
 /* 큰 알림 — 누가 무엇을 했는지 */
-.toast.big{max-width:400px;padding:16px 16px 18px 18px;gap:14px;background:#0f1319;
-  border:1px solid rgba(255,255,255,.09)}
+.toast.big{width:400px;max-width:calc(100vw - 48px);padding:17px 16px 19px 18px;gap:14px;
+  background:#0f1319;border:1px solid rgba(255,255,255,.10);border-radius:16px;
+  box-shadow:0 18px 44px rgba(0,0,0,.42)}
+.toast.warn{background:#1a1114;border-color:rgba(255,120,120,.28)}
+.toast.warn .tbar{background:var(--red)}
+.toast .nav2.warn{background:var(--red);font-size:18px}
 .toast .nav2{flex:0 0 40px;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;
   justify-content:center;font-size:15px;font-weight:800;color:#fff;letter-spacing:-.02em}
 .toast .nbody{flex:1;min-width:0}
@@ -472,7 +476,8 @@ html[data-theme="dark"] .opts.dk button.on{background:var(--blue)}
 .toast .nhd b{font-size:13.5px;font-weight:700}
 .toast .nhd span{font-size:10.5px;color:rgba(255,255,255,.45)}
 .toast .nhd em{margin-left:auto;font-style:normal;font-size:10.5px;color:rgba(255,255,255,.45)}
-.toast .nact{font-size:13px;font-weight:600;margin-top:6px;color:#cfe0ff;line-height:1.45}
+.toast .nact{font-size:13.5px;font-weight:700;margin-top:7px;color:#cfe0ff;line-height:1.45}
+.toast.warn .nact{color:#ffd4d4}
 .toast .ndet{font-size:12px;color:rgba(255,255,255,.62);margin-top:4px;line-height:1.55;
   word-break:break-word}
 /* 업무 삭제 */
@@ -1516,7 +1521,7 @@ async function submitComment(){
 /* 우하단 팝업. 5초 유지 · X 로 즉시 끔 · 마우스를 올리면 안 사라진다 */
 function hideToast(){ const el=document.getElementById('toast'); if(el) el.classList.remove('on'); clearTimeout(window._tt); }
 /* 누가 무엇을 했는지 보여주는 큰 알림. 남이 바꿨을 때 쓴다 */
-function notify(whoId,action,detail,when,ms=6500){
+function notify(whoId,action,detail,when,ms=7000){
   const m=M[whoId];
   return _pop(`
     <div class="nav2" style="background:${m?m.color:'#6b7280'}">${esc((m?m.name:'?').slice(0,1))}</div>
@@ -1525,16 +1530,31 @@ function notify(whoId,action,detail,when,ms=6500){
         ${when?`<em>${esc(when)}</em>`:''}</div>
       <div class="nact">${esc(action)}</div>
       ${detail?`<div class="ndet">${esc(detail)}</div>`:''}
-    </div>`,ms,true);
+    </div>`,ms,'other');
 }
+/* 내 동작도 같은 카드로 띄운다. 작은 알림은 없앴다 —
+   '누가 뭘 했는지'가 항상 같은 크기·같은 자리에 보여야 눈이 학습한다. */
 function toast(m,ms=5000){
-  return _pop(`<span class="tmsg"></span>`,ms,false,m);
+  const msg=String(m);
+  const bad=/실패|오류|없습니다|하세요|주세요|않습니다|겹쳤|입력|지정/.test(msg);
+  const i=msg.indexOf('—');
+  const head=(i>0?msg.slice(0,i):msg).trim();
+  const det =(i>0?msg.slice(i+1):'').trim();
+  if(bad) return _pop(`
+    <div class="nav2 warn">!</div>
+    <div class="nbody"><div class="nhd"><b>확인이 필요합니다</b></div>
+      <div class="nact">${esc(head)}</div>${det?`<div class="ndet">${esc(det)}</div>`:''}</div>`,ms,'warn');
+  const m2=M[ME];
+  return _pop(`
+    <div class="nav2" style="background:${m2?m2.color:'#3b6cf5'}">${esc((m2?m2.name:'나').slice(0,1))}</div>
+    <div class="nbody"><div class="nhd"><b>${esc(m2?m2.name:'나')}</b><span>나</span>
+      <em>${stamp()}</em></div>
+      <div class="nact">${esc(head)}</div>${det?`<div class="ndet">${esc(det)}</div>`:''}</div>`,ms,'me');
 }
-function _pop(html,ms,big,plain){
+function _pop(html,ms,kind){
   const el=document.getElementById('toast'); if(!el) return;
-  el.className='toast'+(big?' big':'');
+  el.className='toast big'+(kind==='warn'?' warn':'');
   el.innerHTML=html+`<span class="tx" onclick="hideToast()" title="닫기">✕</span><i class="tbar" style="width:100%"></i>`;
-  if(plain!==undefined) el.querySelector('.tmsg').textContent=plain;
   el.classList.add('on');
   const bar=el.querySelector('.tbar');
   requestAnimationFrame(()=>{ bar.style.transition=`width ${ms}ms linear`; bar.style.width='0%'; });
