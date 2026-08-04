@@ -120,6 +120,35 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
 .trk .tn2{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:11px;color:var(--muted)}
 .trk .tn2 b{color:var(--txt)}
 .tdot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:2px}
+.ug{display:inline-block;font-size:9.5px;font-weight:800;color:#fff;background:var(--red);
+    border-radius:5px;padding:1px 5px;margin-right:6px;vertical-align:1px}
+.tr2.urgent{background:var(--red-soft)}
+.tr2.urgent:hover{background:var(--red-soft);filter:brightness(.97)}
+.urgbox{border:1px solid var(--red);margin-bottom:20px}
+.ubtn{font-size:11px;font-weight:700;border:1px solid var(--line);border-radius:8px;padding:4px 10px;
+      background:transparent;color:var(--txt2);cursor:pointer}
+.ubtn.on{background:var(--red);color:#fff;border-color:var(--red)}
+.clbox{display:flex;align-items:center;gap:12px;background:var(--inset);border-radius:12px;
+       padding:12px 16px;margin-bottom:16px}
+.clbox b{font-size:12px}
+.clbox select{border:1px solid var(--line);border-radius:9px;padding:6px 10px;font-size:12px;
+       background:var(--card);color:var(--txt);font-family:inherit}
+.clbox em{font-size:11px;color:var(--red);font-style:normal;font-weight:600}
+.gbox{background:var(--card);border-radius:20px;padding:34px 34px 28px;width:340px;
+      box-shadow:0 24px 60px rgba(10,15,25,.28)}
+.gbrand{display:flex;align-items:center;gap:9px;margin-bottom:22px}
+.gbrand .dot{width:26px;height:26px;border-radius:8px;background:var(--blue)}
+.gbrand h1{font-size:15px;font-weight:800;letter-spacing:-.02em}
+.gbrand p{font-size:10px;color:var(--muted);margin-top:1px}
+.gbox h2{font-size:19px;font-weight:800;margin-bottom:6px}
+.gbox .gp{font-size:11.5px;color:var(--muted);line-height:1.6;margin-bottom:18px}
+.gbox input{width:100%;border:1px solid var(--line);border-radius:11px;padding:12px 14px;
+      font-size:13px;font-family:inherit;margin-bottom:10px;background:var(--card);color:var(--txt)}
+.gbox input:focus{outline:0;border-color:var(--blue)}
+.gbox .btn{width:100%;justify-content:center;padding:12px;margin-top:4px}
+.gbox .gerr{background:var(--red-soft);color:var(--red);border-radius:10px;padding:10px 12px;
+      font-size:11.5px;font-weight:600;margin-bottom:12px}
+.gbox .gnote{font-size:10.5px;color:var(--muted);line-height:1.6;margin-top:14px;text-align:center}
 /* ── 업무 줄 ── */
 .tr2{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:11px;cursor:pointer;
      transition:background .12s}
@@ -472,7 +501,7 @@ html[data-theme="dark"] .opts.dk button.on{background:var(--blue)}
     <div class="fl"><label>담당자 지정 <i>*</i><u id="f-memcnt"></u></label><div class="chips" id="f-mem"></div></div>
     <div class="fl"><div class="two">
       <div><label>우선순위</label><div class="opts" id="f-prio">
-        <button data-v="낮음">낮음</button><button data-v="보통">보통</button><button data-v="높음" class="on">높음</button></div></div>
+        <button data-v="낮음">낮음</button><button data-v="보통">보통</button><button data-v="높음" class="on">높음</button><button data-v="긴급">긴급</button></div></div>
       <div><label>관리 주기</label><div class="opts dk" id="f-cyc">
         <button data-v="일간">일간</button><button data-v="주간" class="on">7일</button><button data-v="월간">월간</button></div></div>
     </div></div>
@@ -537,7 +566,7 @@ function inRange(t,r){ return !(new Date(t.end+'T00:00:00') < r.s || new Date(t.
    섞어 두면 목록이 수백 줄이 되고 '지금 뭘 해야 하는가'가 안 보인다. */
 const LIVE = () => DATA.tasks.filter(t=>!t.log);
 const LOGS = () => DATA.tasks.filter(t=>t.log);
-const TRACKS = () => DATA.tracks||[{id:'tools',name:'전체',desc:'',color:'#3b6cf5'}];
+const TRACKS = () => DATA.tracks||[{id:'own',name:'전체',desc:'',color:'#3b6cf5'}];
 const TRK = id => TRACKS().find(t=>t.id===id)||TRACKS()[0];
 const projOf = tid => DATA.projects.filter(p=>p.track===tid);
 function periodTasks(){ const r=periodRange(); return LIVE().filter(t=>inRange(t,r)); }
@@ -567,8 +596,21 @@ function setBoardView(v){ BOARDVIEW=v; render(); }
 function setLinkF(v){ LINKF=v; render(); }
 function setRPerson(v){ RPERSON=v; render(); }
 function togAcc(id){ OPENP[id]=OPENP[id]===false; render(); }
+async function setTrack(pid,tid){
+  if(API){ await push('project.track',{id:pid,track:tid}); }
+  else { P[pid].track=tid; render(); }
+}
 function doSearch(v){ QUERY=v.trim(); render(); if(QUERY){ const i=document.getElementById('q'); if(i){i.focus(); i.setSelectionRange(i.value.length,i.value.length);} } }
 const tone = st => st==='지연'?'var(--red)':st==='완료'?'var(--muted)':st==='검수중'?'var(--green)':'var(--blue)';
+const URG = t => t.prio==='긴급';
+const urgTag = t => URG(t)?'<span class="ug">긴급</span>':'';
+/* 긴급 → 보통 토글. 한 번 눌러 격상하고 한 번 눌러 내린다 */
+async function toggleUrgent(id){
+  const t=DATA.tasks.find(x=>x.id===id); if(!t) return;
+  const nx = URG(t) ? '높음' : '긴급';
+  if(API){ if(await push('task.prio',{id,prio:nx})) { if(OPENT) drawTask(); } }
+  else { t.prio=nx; render(); if(OPENT) drawTask(); }
+}
 const fmt = n => n.toLocaleString('ko-KR');
 
 /* ---------- sidebar ---------- */
@@ -587,7 +629,8 @@ function sidebar(){
   document.getElementById('mecard').innerHTML = me ? `
     <div class="row"><div class="av" style="background:${me.color}"></div>
       <div><div class="nm">${esc(me.name)}</div><div class="rl">${esc(me.role)}</div></div>
-      ${MODE!=='static'?`<button class="sw" onclick="switchMe()">전환</button>`:''}</div>
+      ${MODE==='gh'?`<button class="sw" onclick="switchMe()">전환</button>`:''}
+      ${MODE==='server'?`<button class="sw" onclick="logout()">로그아웃</button>`:''}</div>
     <div class="stats">
       <div class="st"><b>${myProj.size}</b><span>담당 프로젝트</span></div>
       <div class="st"><b>${mine.filter(t=>t.status==='진행중').length}</b><span>진행 업무</span></div></div>
@@ -697,7 +740,7 @@ function vDashboard(){
   const meName=ME&&M[ME]?M[ME].name:'전체';
 
   /* 3축 요약 — 프로젝트를 낱개로 뿌리지 않는다 */
-  const trackCards = TRACKS().map(tr=>{
+  const trackCards = TRACKS().filter(tr=>projOf(tr.id).length).map(tr=>{
     const ps=projOf(tr.id);
     const st=ps.reduce((a,pr)=>{const x=pstat(pr.id);
       return {live:a.live+x.live, late:a.late+x.late, urg:a.urg+x.urg, done:a.done+x.done};},
@@ -713,25 +756,31 @@ function vDashboard(){
       ${near?`<div class="tn2">가장 가까운 마감 · ${esc(near.name.slice(0,18))} <b>${ddayTxt(near.due)}</b></div>`:''}
     </div>`;}).join('');
 
-  const row = t => `<div class="tr2" onclick="openTask('${t.id}')">
-    <span class="dot" style="background:${tone(t.status)}"></span>
-    <div><b>${esc(t.title)}</b><span>${esc(P[t.p].name.replace(/\s*\(.*?\)/,'').slice(0,18))} · ${esc(M[t.a].name)}</span></div>
+  const row = t => `<div class="tr2 ${URG(t)?'urgent':''}" onclick="openTask('${t.id}')">
+    <span class="dot" style="background:${URG(t)?'var(--red)':tone(t.status)}"></span>
+    <div><b>${urgTag(t)}${esc(t.title)}</b><span>${esc(P[t.p].name.replace(/\s*\(.*?\)/,'').slice(0,18))} · ${esc(M[t.a].name)}</span></div>
     ${t.comments&&t.comments.length?`<span class="cbadge">💬 ${t.comments.length}</span>`:''}
     <span class="dday ${dday(t.due)<=1?'urg':''}">${ddayTxt(t.due)}</span></div>`;
 
+  const urg=live.filter(URG);
   return siteRow(null)+kpiRow([
+    {label:'★ 긴급',value:urg.length,unit:'건',pct:Math.min(100,urg.length*25),color:'var(--red)',
+     foot:urg.length?urg[0].title.slice(0,22):'격상된 업무 없음'},
     {label:meName+' · 오늘 할 일',value:today.length,unit:'건',pct:100,foot:today.length?'기한이 오늘이거나 지났습니다':'오늘 마감은 없습니다'},
     {label:'7일 내 마감',value:wk.length,unit:'건',pct:Math.min(100,wk.length*8),foot:'전사 기준'},
-    {label:'지연',value:late.length,unit:'건',pct:Math.min(100,late.length*20),color:'var(--red)',foot:late.length?'즉시 조치':'없음'},
-    {label:'대표 조치 필요',value:DATA.unassigned.length,unit:'건',pct:35,color:'var(--amber)',foot:'담당자 미지정'}
+    {label:'지연 · 미지정',value:late.length+DATA.unassigned.length,unit:'건',pct:Math.min(100,(late.length+DATA.unassigned.length)*12),color:'var(--amber)',
+     foot:`지연 ${late.length} · 미지정 ${DATA.unassigned.length}`}
   ])
+  +(urg.length?`<div class="card pad urgbox"><div class="ch"><h3>★ 긴급 — 다른 일보다 먼저</h3>
+      <span class="pill" style="background:var(--red);color:#fff">${urg.length}건</span></div>
+      ${urg.slice().sort((a,b)=>a.due.localeCompare(b.due)).map(row).join('')}</div>`:'')
   +`<div class="trks">${trackCards}</div>
   <div class="cols">
     <div class="card pad">
       <div class="ch"><h3>${esc(meName)} · 지금 할 일</h3>
         <span class="pill">${mine.filter(t=>t.status!=='완료').length}건</span>
         <button class="btn" style="margin-left:auto" onclick="openModal()">+ 업무 등록</button></div>
-      ${(()=>{const l=mine.filter(t=>t.status!=='완료').slice().sort((a,b)=>a.due.localeCompare(b.due));
+      ${(()=>{const l=mine.filter(t=>t.status!=='완료').slice().sort((a,b)=>(URG(b)-URG(a))||a.due.localeCompare(b.due));
         return l.length?l.slice(0,9).map(row).join('')+(l.length>9?`<div class="mor" onclick="location.hash='#/tasks'">외 ${l.length-9}건 — 업무관리에서 전체보기</div>`:'')
                        :'<div class="empty">할 일이 없습니다.</div>';})()}
     </div>
@@ -824,6 +873,11 @@ function vProject(id){
       <button class="btn" onclick="openModal('${p.id}')">+ 업무 등록</button>
       <button class="tgl" onclick="toggleTheme()" title="라이트 / 다크"><i></i></button></div></div>
   <div class="nxtbox"><b>해야 할 일</b><span>${esc(p.next||'확인 필요')}</span></div>
+  <div class="clbox"><b>발주처</b>
+    <select onchange="setTrack('${p.id}',this.value)">
+      ${TRACKS().map(tr=>`<option value="${tr.id}" ${p.track===tr.id?'selected':''}>${esc(tr.name)}</option>`).join('')}
+    </select>
+    ${p.track==='none'?'<em>지정되지 않았습니다 — 골라 주세요</em>':''}</div>
   ${siteRow(p.id)}
   ${kpiRow([
     {label:'전체 진행률',value:p.progress,unit:'%',pct:p.progress,foot:esc(p.progressNote||'근거 확인 필요')},
@@ -885,9 +939,9 @@ function vProject(id){
 }
 
 function vTasks(){
-  const q=(t)=>`<div class="tr2" onclick="openTask('${t.id}')">
-      <span class="dot" style="background:${tone(t.status)}"></span>
-      <div><b>${esc(t.title)}</b><span>${esc(t.tag)} · ${esc(M[t.a].name)} · ${t.prio}</span></div>
+  const q=(t)=>`<div class="tr2 ${URG(t)?'urgent':''}" onclick="openTask('${t.id}')">
+      <span class="dot" style="background:${URG(t)?'var(--red)':tone(t.status)}"></span>
+      <div><b>${urgTag(t)}${esc(t.title)}</b><span>${esc(t.tag)} · ${esc(M[t.a].name)} · ${t.prio}</span></div>
       ${t.comments&&t.comments.length?`<span class="cbadge">💬 ${t.comments.length}</span>`:''}
       <span class="bd ${t.status}" onclick="event.stopPropagation();cycleStatus('${t.id}')">${t.status}</span>
       <span class="dday ${dday(t.due)<=2?'urg':''}">${ddayTxt(t.due)}</span></div>`;
@@ -900,8 +954,9 @@ function vTasks(){
       <div class="ch"><span class="tdot" style="background:${tr.color}"></span>
         <h3>${esc(tr.name)}</h3><span class="pill">${n}건</span></div>
       ${ps.map(pr=>{
+        const S={'지연':0,'진행중':1,'검수중':2,'대기':3,'협의중':4};
         const ts=live.filter(t=>t.p===pr.id).slice()
-          .sort((a,b)=>({'지연':0,'진행중':1,'검수중':2,'대기':3,'협의중':4}[a.status]-{'지연':0,'진행중':1,'검수중':2,'대기':3,'협의중':4}[b.status])||a.due.localeCompare(b.due));
+          .sort((a,b)=>(URG(b)-URG(a))||(S[a.status]-S[b.status])||a.due.localeCompare(b.due));
         const open=OPENP[pr.id]!==false;
         return `<div class="acc">
           <div class="ah" onclick="togAcc('${pr.id}')">
@@ -1349,7 +1404,9 @@ function drawTask(){
       <div><small>담당자</small><div class="who">${av(t.a)}${esc(M[t.a].name)}</div></div>
       <div><small>상태</small><span class="bd ${t.status}" style="cursor:pointer"
         onclick="cycleStatus('${t.id}').then(drawTask)">${t.status}</span></div>
-      <div><small>우선순위</small><b>${esc(t.prio)}</b></div>
+      <div><small>우선순위</small>
+        <button class="ubtn ${URG(t)?'on':''}" onclick="toggleUrgent('${t.id}')"
+          title="누르면 긴급으로 올리고, 다시 누르면 내립니다">${URG(t)?'★ 긴급':esc(t.prio)+' → 긴급으로'}</button></div>
       <div><small>기입자</small><b>${esc(M[t.by]?M[t.by].name:t.by||'-')}</b></div>
     </div>
     ${t.desc?`<div class="tdesc">${esc(t.desc)}</div>`:''}
@@ -1452,6 +1509,14 @@ const MUT = {
     const i=board.tasks.findIndex(x=>x.id===id); if(i<0) throw new Error('없는 업무입니다');
     const [t]=board.tasks.splice(i,1); logAct(board,t.a,`${t.title} · 삭제`,by); return `${t.title} · 삭제`;
   },
+  'task.prio'(board,{id,prio,by}){
+    const t=board.tasks.find(x=>x.id===id);
+    if(!t) throw new Error('없는 업무입니다');
+    if(!['낮음','보통','높음','긴급'].includes(prio)) throw new Error('허용되지 않는 우선순위입니다');
+    const prev=t.prio; t.prio=prio;
+    logAct(board,t.a,`${t.title} · ${prev} → ${prio}`,by);
+    return prio==='긴급'?'긴급 격상':'우선순위';
+  },
   'task.comment'(board,{id,text,by}){
     const t=board.tasks.find(x=>x.id===id);
     if(!t) throw new Error('없는 업무입니다');
@@ -1459,6 +1524,14 @@ const MUT = {
     (t.comments=t.comments||[]).push({by,text:text.trim(),when:stamp()});
     logAct(board,by,`${t.title} · 코멘트`,by);
     return '코멘트';
+  },
+  'project.track'(board,{id,track,by}){
+    const p=board.projects.find(x=>x.id===id);
+    if(!p) throw new Error('없는 프로젝트입니다');
+    if(!(board.tracks||[]).some(t=>t.id===track)) throw new Error('없는 발주처입니다');
+    p.track=track;
+    logAct(board,p.owner,`${p.name} · 발주처 ${(board.tracks.find(t=>t.id===track)||{}).name}`,by);
+    return '발주처';
   },
   'project.add'(board,{proj,by}){
     if(!proj||!proj.name) throw new Error('프로젝트 이름이 없습니다');
@@ -1480,6 +1553,20 @@ const MUT = {
   }
 };
 
+/* 서버판 실시간 — SSE. 끊기면 5초 뒤 다시 붙는다 */
+function subscribe(){
+  let es;
+  const open=()=>{
+    es=new EventSource('/api/stream');
+    es.onmessage=e=>{ let d={}; try{ d=JSON.parse(e.data);}catch{}
+      if(d.t==='change'){
+        pull().then(()=>{ if(d.by&&d.by!==ME&&M[d.by]) toast(`${M[d.by].name}님 · ${d.label||'변경'}`); });
+      }};
+    es.onerror=()=>{ try{es.close();}catch{} setTimeout(open,5000); };
+  };
+  open();
+  setInterval(pull, 60000);          // 안전망 — SSE 가 죽어도 1분마다 맞춘다
+}
 async function pull(){
   if(MODE==='static') return;
   try{
@@ -1489,7 +1576,7 @@ async function pull(){
     const prevAct=(DATA.activity||[])[0];
     DATA=j.board; DATA.__rev=j.rev; reindex(); render();
     if(OPENT) drawTask();
-    if(before!==undefined){
+    if(before!==undefined && MODE==='gh'){
       const a=(DATA.activity||[])[0];
       const who = a&&M[a.who]?M[a.who].name:'';
       toast(a&&(!prevAct||a.when!==prevAct.when||a.text!==prevAct.text)
@@ -1524,6 +1611,33 @@ function switchMe(){
   try{localStorage.setItem('hd-me',ME);}catch(e){}
   render();
 }
+function loginGate(err){
+  const g=document.getElementById('gate');
+  g.innerHTML=`<div class="gbox">
+    <div class="gbrand"><div class="dot"></div><div><h1>HAYDAY</h1><p>Work Management</p></div></div>
+    <h2>로그인</h2>
+    <p class="gp">사내 업무관리 대시보드입니다. 계정은 대표에게 받으십시오.</p>
+    ${err?`<div class="gerr">${esc(err)}</div>`:''}
+    <input id="g-id" placeholder="아이디" autocomplete="username">
+    <input id="g-pw" type="password" placeholder="비밀번호" autocomplete="current-password"
+      onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn" onclick="doLogin()">로그인</button>
+    <div class="gnote">비밀번호는 서버에서 해시로만 보관합니다. 이 화면에 저장하지 않습니다.</div>
+  </div>`;
+  g.classList.add('on');
+  setTimeout(()=>{const e=document.getElementById('g-id'); if(e) e.focus();},50);
+}
+async function doLogin(){
+  const id=document.getElementById('g-id').value.trim();
+  const pw=document.getElementById('g-pw').value;
+  if(!id||!pw){ loginGate('아이디와 비밀번호를 모두 입력하세요'); return; }
+  const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({id,pw})}).catch(()=>null);
+  if(!r||!r.ok){ const e=r?await r.json().catch(()=>({})):{};
+    loginGate(e.error||'로그인에 실패했습니다'); return; }
+  location.reload();
+}
+async function logout(){ await fetch('/api/logout'); location.reload(); }
 function tokenGate(err){
   document.getElementById('gate').innerHTML =
     `<div class="gatebox"><h3>접속 토큰 입력</h3>
@@ -1571,7 +1685,8 @@ function afterLoad(){
   if(MODE==='static') ME = (DATA.members.find(m=>m.kind==='human')||DATA.members[0]).id;
   render();
   if(MODE!=='static' && !ME) pickMeFirst();
-  if(MODE!=='static' && !POLLING){ POLLING=true; setInterval(pull, MODE==='gh'?8000:4000); }
+  if(MODE==='gh' && !POLLING){ POLLING=true; setInterval(pull, 8000); }
+  if(MODE==='server' && !POLLING){ POLLING=true; subscribe(); }
 }
 (async function boot(){
   if(MODE==='gh'){
@@ -1580,6 +1695,9 @@ function afterLoad(){
     try{ const j=await ghGet(); DATA=j.board; DATA.__rev=j.rev; }
     catch(e){ TOKEN=null; try{localStorage.removeItem('hd-gh-token');}catch(_){} tokenGate(e.message); return; }
   } else if(MODE==='server'){
+    const m=await fetch('/api/me').then(r=>r.ok?r.json():null).catch(()=>null);
+    if(!m||!m.me){ loginGate(); return; }
+    ME=m.me;
     const j=await srvGet(); DATA=j.board; DATA.__rev=j.rev;
   }
   reindex(); afterLoad();
