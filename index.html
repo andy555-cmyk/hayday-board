@@ -103,6 +103,63 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
 .lnkrow a .sq{width:18px;height:18px;border-radius:5px;display:flex;align-items:center;
        justify-content:center;font-size:9px;font-weight:800;color:#fff}
 .lnkrow a small{color:var(--muted);font-weight:500;font-size:11px}
+
+/* ── 3축 카드 ── */
+.trks{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
+.trk{background:var(--card);border-radius:16px;padding:18px 20px;cursor:pointer;
+     border:1px solid var(--line);border-top:3px solid var(--tc);transition:transform .12s,box-shadow .12s}
+.trk:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(15,23,42,.08)}
+.trk .th{display:flex;align-items:center;gap:8px}
+.trk .th b{font-size:14px}
+.trk p{font-size:11px;color:var(--muted);margin:4px 0 12px}
+.trk .tbar{height:6px;border-radius:99px;background:var(--inset);overflow:hidden}
+.trk .tbar i{display:block;height:100%;background:var(--tc);border-radius:99px}
+.trk .tm2{display:flex;gap:14px;margin-top:10px;font-size:11.5px;color:var(--muted)}
+.trk .tm2 b{color:var(--txt);font-size:13px}
+.trk .tm2 .rd b,.trk .tm2 .rd{color:var(--red)}
+.trk .tn2{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:11px;color:var(--muted)}
+.trk .tn2 b{color:var(--txt)}
+.tdot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:2px}
+/* ── 업무 줄 ── */
+.tr2{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:11px;cursor:pointer;
+     transition:background .12s}
+.tr2:hover{background:var(--inset)}
+.tr2 .dot{width:8px;height:8px;border-radius:50%;flex:0 0 8px}
+.tr2 > div{min-width:0;flex:1}
+.tr2 b{display:block;font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tr2 > div > span{display:block;font-size:10.5px;color:var(--muted);margin-top:2px}
+.tr2 .cbadge{font-size:10.5px;color:var(--blue);background:var(--blue-soft);border-radius:7px;padding:2px 7px;font-weight:700}
+.mor{padding:10px 12px;font-size:11.5px;color:var(--blue);cursor:pointer;font-weight:600}
+/* ── 아코디언 ── */
+.acc{border-top:1px solid var(--line)}
+.acc:first-of-type{border-top:0}
+.ah{display:flex;align-items:center;gap:8px;padding:12px 4px;cursor:pointer}
+.ah b{font-size:13px}
+.ah .car{display:inline-block;font-size:11px;color:var(--muted);transition:transform .15s}
+.ah .car.on{transform:rotate(90deg)}
+.ab{padding:0 0 8px 18px}
+/* ── 업무 상세 · 코멘트 ── */
+#tmd{max-width:640px}
+#tmd .mh h3{margin-top:6px}
+.tchip{display:inline-block;font-size:10px;font-weight:700;color:#fff;border-radius:6px;padding:2px 8px}
+.tmeta{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px 0;border-bottom:1px solid var(--line)}
+.tmeta small{display:block;font-size:10.5px;color:var(--muted);margin-bottom:5px}
+.tmeta b{font-size:12.5px}
+.tdesc{padding:14px 0;font-size:12.5px;color:var(--txt2);line-height:1.7;border-bottom:1px solid var(--line)}
+.cwrap{padding-top:16px}
+.chd{font-size:12px;font-weight:700;margin-bottom:12px}
+.chd span{color:var(--blue);margin-left:5px}
+.cmt{display:flex;gap:10px;padding:10px 0}
+.cmt .cm1{display:flex;align-items:center;gap:8px}
+.cmt .cm1 b{font-size:12px}
+.cmt .cm1 span{font-size:10.5px;color:var(--muted)}
+.cmt p{font-size:12.5px;color:var(--txt2);line-height:1.65;margin-top:4px;white-space:pre-wrap}
+.cempty{font-size:12px;color:var(--muted);padding:10px 0}
+.cin{display:flex;gap:10px;align-items:flex-start;margin-top:12px;padding-top:14px;border-top:1px solid var(--line)}
+.cin textarea{flex:1;border:1px solid var(--line);border-radius:11px;padding:10px 12px;font-size:12.5px;
+   font-family:inherit;resize:vertical;background:var(--bg2,transparent);color:var(--txt)}
+.cin .btn{align-self:stretch;padding:0 18px}
+@media(max-width:1100px){.trks{grid-template-columns:1fr}.tmeta{grid-template-columns:repeat(2,1fr)}}
 .sbcta{margin:20px 20px 0;background:var(--blue);border-radius:16px;padding:16px}
 .sbcta small{font-size:10.5px;opacity:.8;display:block}
 .sbcta b{font-size:14.5px;font-weight:700;display:block;margin:5px 0 12px}
@@ -377,7 +434,6 @@ html[data-theme="dark"] .opts.dk button.on{background:var(--blue)}
 <div class="app">
   <aside class="sb">
     <div class="brand"><div class="dot"></div><div><h1>HAYDAY</h1><p>Work Management</p></div></div>
-    <a href="./agents.html" style="display:block;margin:10px 0 2px;padding:9px 11px;background:rgba(59,130,246,.10);border:1px solid rgba(59,130,246,.35);border-radius:9px;color:#9dbcff;font-size:12.5px;text-decoration:none">&#129302; SIGMA 에이전트 현황</a>
     <div class="me" id="mecard"></div>
     <nav class="nav" id="nav"></nav>
     <hr>
@@ -401,7 +457,15 @@ html[data-theme="dark"] .opts.dk button.on{background:var(--blue)}
 <div class="ov" id="ov" onclick="if(event.target===this)closeModal()">
   <div class="md">
     <div class="mh"><div><h3>업무 등록</h3><p>프로젝트에 새 업무를 추가하고 담당자를 지정합니다</p></div><button class="x" onclick="closeModal()">✕</button></div>
-    <div class="fl"><label>프로젝트 <i>*</i></label><select id="f-proj"></select></div>
+    <div class="fl"><label>프로젝트 <i>*</i></label><select id="f-proj" onchange="onProjSel()"></select></div>
+    <div class="fl" id="f-newwrap" style="display:none">
+      <label>새 프로젝트 <i>*</i></label>
+      <input id="f-newname" placeholder="프로젝트 이름 — 예: 사하구 원도심 활성화 용역">
+      <div class="two" style="margin-top:8px">
+        <input id="f-newclient" placeholder="발주처 — 예: 사하구청">
+        <select id="f-newtrack"></select></div>
+      <input id="f-newnext" placeholder="지금 해야 할 일 (필수) — 예: 공고문 분석 후 착수 판단" style="margin-top:8px">
+    </div>
     <div class="fl"><label>업무명 <i>*</i></label><input id="f-title" placeholder="예: 제안서 본문 6~8장 편집디자인"></div>
     <div class="fl"><label>상세 내용</label><textarea id="f-desc" placeholder="추진전략 · 세부 실행계획 페이지 레이아웃 정리 후 1차 시안 공유"></textarea></div>
     <div class="fl"><label>추진 기간 <i>*</i></label><div class="two"><input type="date" id="f-s"><input type="date" id="f-e"></div></div>
@@ -416,6 +480,9 @@ html[data-theme="dark"] .opts.dk button.on{background:var(--blue)}
       <button class="btn sec sp" onclick="closeModal()">취소</button>
       <button class="btn" onclick="submitTask()">업무 등록</button></div>
   </div>
+</div>
+<div class="ov" id="tov" onclick="if(event.target===this)closeTask()">
+  <div class="md" id="tmd"></div>
 </div>
 <div class="gate" id="gate"></div>
 <div class="toast" id="toast"></div>
@@ -434,7 +501,8 @@ function reindex(){ if(!DATA||!DATA.members) return; M=Object.fromEntries(DATA.m
 const TODAY = (()=>{ const d=new Date(); return new Date(d.getFullYear(),d.getMonth(),d.getDate()); })();
 const NAV = [
   ['dashboard','대시보드'],['tasks','업무관리'],['projects','프로젝트'],
-  ['schedule','스케줄'],['assign','담당자 배정'],['report','리포트'],['orders','수주 · 연계']
+  ['schedule','스케줄'],['report','리포트'],['activity','활동 이력'],
+  ['assign','담당자 배정'],['orders','수주 · 연계']
 ];
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const av = (id,sz=22)=>`<span class="av" style="width:${sz}px;height:${sz}px;background:${M[id]?M[id].color:'#ccc'}"></span>`;
@@ -446,6 +514,8 @@ let QUERY  = '';                          // 검색어
 let BOARDVIEW = 'board';                  // board | list | gantt
 let LINKF  = '전체';                       // 연계 필터
 let RPERSON = 'all';                      // 리포트 담당자 탭
+let OPENP  = {};                          // 업무관리 프로젝트 접기 상태
+let OPENT  = null;                        // 열려 있는 업무 상세 id
 const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-`+
                  `${String(d.getDate()).padStart(2,'0')}`;   // 로컬 기준. toISOString 금지(위 주석)
 function periodRange(){
@@ -463,7 +533,23 @@ function periodRange(){
 }
 const fmtD = d => `${d.getFullYear()}. ${String(d.getMonth()+1).padStart(2,'0')}. ${String(d.getDate()).padStart(2,'0')}`;
 function inRange(t,r){ return !(new Date(t.end+'T00:00:00') < r.s || new Date(t.start+'T00:00:00') > r.e); }
-function periodTasks(){ const r=periodRange(); return DATA.tasks.filter(t=>inRange(t,r)); }
+/* ★ 업무(관리 대상) 와 활동 이력(끝난 기록) 을 나눈다.
+   섞어 두면 목록이 수백 줄이 되고 '지금 뭘 해야 하는가'가 안 보인다. */
+const LIVE = () => DATA.tasks.filter(t=>!t.log);
+const LOGS = () => DATA.tasks.filter(t=>t.log);
+const TRACKS = () => DATA.tracks||[{id:'tools',name:'전체',desc:'',color:'#3b6cf5'}];
+const TRK = id => TRACKS().find(t=>t.id===id)||TRACKS()[0];
+const projOf = tid => DATA.projects.filter(p=>p.track===tid);
+function periodTasks(){ const r=periodRange(); return LIVE().filter(t=>inRange(t,r)); }
+function periodLogs(){ const r=periodRange(); return LOGS().filter(t=>inRange(t,r)); }
+/* 프로젝트 한 건의 상태 요약 — 화면 여러 곳에서 같은 계산을 쓴다 */
+function pstat(pid){
+  const live=LIVE().filter(t=>t.p===pid);
+  return {live:live.length, run:live.filter(t=>t.status==='진행중').length,
+          late:live.filter(t=>t.status==='지연').length,
+          urg:live.filter(t=>dday(t.due)<=3).length,
+          done:LOGS().filter(t=>t.p===pid).length};
+}
 /* 최근 7일 일별 완료 건수 — 완료일(end) 기준. 지어낸 숫자를 쓰지 않는다 */
 function dailyDone(){
   const out=[];
@@ -471,7 +557,7 @@ function dailyDone(){
     const d=new Date(TODAY); d.setDate(TODAY.getDate()-i);
     const key=ymd(d);
     out.push({date:key.slice(5).replace('-','.'), wd:'일월화수목금토'[d.getDay()],
-              n:DATA.tasks.filter(t=>t.status==='완료'&&t.end===key).length});
+              n:DATA.tasks.filter(t=>t.status==='완료'&&t.end===key).length});  // 로그 포함
   }
   return out;
 }
@@ -480,6 +566,7 @@ function setOrdP(p){ ORDP=p; render(); }
 function setBoardView(v){ BOARDVIEW=v; render(); }
 function setLinkF(v){ LINKF=v; render(); }
 function setRPerson(v){ RPERSON=v; render(); }
+function togAcc(id){ OPENP[id]=OPENP[id]===false; render(); }
 function doSearch(v){ QUERY=v.trim(); render(); if(QUERY){ const i=document.getElementById('q'); if(i){i.focus(); i.setSelectionRange(i.value.length,i.value.length);} } }
 const tone = st => st==='지연'?'var(--red)':st==='완료'?'var(--muted)':st==='검수중'?'var(--green)':'var(--blue)';
 const fmt = n => n.toLocaleString('ko-KR');
@@ -492,7 +579,7 @@ function sidebar(){
   document.getElementById('memlist').innerHTML = DATA.members.map(m=>
     `<div class="mem"><span class="av ${m.kind==='ai'?'ai':''}" style="background:${m.color}"></span>
      <div><div class="nm">${esc(m.name)}</div><div class="rl">${esc(m.role)}</div></div>
-     <span class="cnt">${m.load}</span></div>`).join('');
+     <span class="cnt">${LIVE().filter(t=>t.a===m.id).length}</span></div>`).join('');
   const me = M[ME];
   const mine = DATA.tasks.filter(t=>t.a===ME);
   const myProj = new Set(DATA.projects.filter(p=>p.owner===ME||p.team.includes(ME)).map(p=>p.id));
@@ -584,7 +671,7 @@ function ganttRows(tasks){
 
 /* 일간 — 간트 대신 오늘 할 일 목록이 실용적이다 */
 function dayBoard(){
-  const r=periodRange(), list=DATA.tasks.filter(t=>inRange(t,r));
+  const r=periodRange(), list=LIVE().filter(t=>inRange(t,r));
   if(!list.length) return `<div class="empty">오늘 진행 중인 업무가 없습니다.</div>`;
   const byMem={}; list.forEach(t=>(byMem[t.a]=byMem[t.a]||[]).push(t));
   return `<div class="cols3">${Object.entries(byMem).map(([mid,ts])=>`
@@ -598,45 +685,64 @@ function dayBoard(){
         <span class="d" style="${dday(t.due)<=2&&t.status!=='완료'?'color:var(--red)':''}">${t.status==='완료'?'완료':ddayTxt(t.due)}</span></div></div>`).join('')}
     </div>`).join('')}</div>`;
 }
-function timeline(){ return PERIOD==='day' ? dayBoard() : ganttRows(DATA.tasks); }
+function timeline(){ return PERIOD==='day' ? dayBoard() : ganttRows(LIVE()); }
 
 /* ---------- views ---------- */
 function vDashboard(){
-  const T=periodTasks(), done=T.filter(t=>t.status==='완료').length,
-        run=T.filter(t=>t.status==='진행중').length, late=T.filter(t=>t.status==='지연').length;
-  const assigned=T.length, total=T.length+DATA.unassigned.length;
-  const pl={day:'오늘',week:'최근 7일',month:'이번 달'}[PERIOD];
-  const byMem={}; T.forEach(t=>byMem[t.a]=(byMem[t.a]||0)+1);
+  const live=LIVE();
+  const mine=ME?live.filter(t=>t.a===ME):live;
+  const today=mine.filter(t=>t.status!=='완료'&&dday(t.due)<=0);
+  const wk=live.filter(t=>t.status!=='완료'&&dday(t.due)>=0&&dday(t.due)<=7);
+  const late=live.filter(t=>t.status==='지연'||(t.status!=='완료'&&dday(t.due)<0));
+  const meName=ME&&M[ME]?M[ME].name:'전체';
+
+  /* 3축 요약 — 프로젝트를 낱개로 뿌리지 않는다 */
+  const trackCards = TRACKS().map(tr=>{
+    const ps=projOf(tr.id);
+    const st=ps.reduce((a,pr)=>{const x=pstat(pr.id);
+      return {live:a.live+x.live, late:a.late+x.late, urg:a.urg+x.urg, done:a.done+x.done};},
+      {live:0,late:0,urg:0,done:0});
+    const avg=ps.length?Math.round(ps.reduce((a,pr)=>a+pr.progress,0)/ps.length):0;
+    const near=ps.slice().sort((a,b)=>dday(a.due)-dday(b.due))[0];
+    return `<div class="trk" onclick="location.hash='#/projects'" style="--tc:${tr.color}">
+      <div class="th"><b>${esc(tr.name)}</b><span class="pill">${ps.length}개</span></div>
+      <p>${esc(tr.desc)}</p>
+      <div class="tbar"><i style="width:${avg}%"></i></div>
+      <div class="tm2"><span>평균 <b>${avg}%</b></span><span>업무 <b>${st.live}</b></span>
+        ${st.late?`<span class="rd">지연 <b>${st.late}</b></span>`:`<span>완료 <b>${st.done}</b></span>`}</div>
+      ${near?`<div class="tn2">가장 가까운 마감 · ${esc(near.name.slice(0,18))} <b>${ddayTxt(near.due)}</b></div>`:''}
+    </div>`;}).join('');
+
+  const row = t => `<div class="tr2" onclick="openTask('${t.id}')">
+    <span class="dot" style="background:${tone(t.status)}"></span>
+    <div><b>${esc(t.title)}</b><span>${esc(P[t.p].name.replace(/\s*\(.*?\)/,'').slice(0,18))} · ${esc(M[t.a].name)}</span></div>
+    ${t.comments&&t.comments.length?`<span class="cbadge">💬 ${t.comments.length}</span>`:''}
+    <span class="dday ${dday(t.due)<=1?'urg':''}">${ddayTxt(t.due)}</span></div>`;
+
   return siteRow(null)+kpiRow([
-    {label:pl+' 전체 업무',value:total,unit:'건',pct:100,foot:`미지정 ${DATA.unassigned.length}건 포함`},
-    {label:'진행중',value:run,unit:'건',pct:total?Math.round(run/total*100):0,foot:`담당자 지정 ${assigned}건`},
-    {label:'완료',value:done,unit:'건',pct:total?Math.round(done/total*100):0,color:'var(--green)',foot:`완료율 ${total?Math.round(done/total*100):0}%`},
-    {label:'지연 · 보류',value:late,unit:'건',pct:total?Math.round(late/total*100):0,color:'var(--red)',foot:'즉시 조치 필요'}
+    {label:meName+' · 오늘 할 일',value:today.length,unit:'건',pct:100,foot:today.length?'기한이 오늘이거나 지났습니다':'오늘 마감은 없습니다'},
+    {label:'7일 내 마감',value:wk.length,unit:'건',pct:Math.min(100,wk.length*8),foot:'전사 기준'},
+    {label:'지연',value:late.length,unit:'건',pct:Math.min(100,late.length*20),color:'var(--red)',foot:late.length?'즉시 조치':'없음'},
+    {label:'대표 조치 필요',value:DATA.unassigned.length,unit:'건',pct:35,color:'var(--amber)',foot:'담당자 미지정'}
   ])
-  +`<div class="cols">
+  +`<div class="trks">${trackCards}</div>
+  <div class="cols">
     <div class="card pad">
-      <div class="ch"><h3>프로젝트별 추진현황</h3><span class="pill">${DATA.projects.filter(p=>p.status!=='완료').length}개 진행</span>
-        <a class="more" href="#/projects" style="cursor:pointer">전체보기</a></div>
-      <table><thead><tr><th>프로젝트</th><th>담당자</th><th>진행률</th><th>상태</th><th style="text-align:right">기한</th></tr></thead><tbody>
-      ${DATA.projects.filter(p=>p.status!=='완료').slice(0,6).map(p=>`<tr onclick="location.hash='#/project/${p.id}'" style="cursor:pointer">
-        <td><div class="pn"><span class="tick" style="background:${M[p.owner].color}"></span>
-          <span><b>${esc(p.name.length>24?p.name.slice(0,24)+'…':p.name)}</b>
-          <span class="nxt" title="${esc(p.next||'')}">▸ ${esc(p.next||'확인 필요')}</span></span></div></td>
-        <td><div class="who">${av(p.owner)}${esc(M[p.owner].name)}</div></td>
-        <td><div class="pg"><div class="bar"><i style="width:${p.progress}%;background:${tone(p.status)}"></i></div><span>${p.progress}%</span></div></td>
-        <td><span class="bd ${p.status}">${p.status}</span></td>
-        <td style="text-align:right"><span class="dday ${dday(p.due)<=3?'urg':''}">${ddayTxt(p.due)}</span></td></tr>`).join('')}
-      </tbody></table>
+      <div class="ch"><h3>${esc(meName)} · 지금 할 일</h3>
+        <span class="pill">${mine.filter(t=>t.status!=='완료').length}건</span>
+        <button class="btn" style="margin-left:auto" onclick="openModal()">+ 업무 등록</button></div>
+      ${(()=>{const l=mine.filter(t=>t.status!=='완료').slice().sort((a,b)=>a.due.localeCompare(b.due));
+        return l.length?l.slice(0,9).map(row).join('')+(l.length>9?`<div class="mor" onclick="location.hash='#/tasks'">외 ${l.length-9}건 — 업무관리에서 전체보기</div>`:'')
+                       :'<div class="empty">할 일이 없습니다.</div>';})()}
     </div>
     <div class="dp">
-      <div class="ch"><h3>담당자 지정 현황</h3><span class="pill" style="margin-left:auto">${total?Math.round(assigned/total*100):0}%</span></div>
-      <div class="big">${assigned}<small>/ ${total}건 지정 완료</small></div>
-      <div class="segbar">${DATA.members.map(m=>`<i style="flex:${byMem[m.id]||0.4};background:${m.color}"></i>`).join('')}
-        <i style="flex:${DATA.unassigned.length};background:#39424f"></i></div>
-      <div class="lg">${DATA.members.map(m=>`<span><em style="background:${m.color}"></em>${esc(m.name)}</span>`).join('')}
-        <span><em style="background:#39424f"></em>미지정</span></div>
+      <div class="ch"><h3>최근 활동</h3><span class="pill" style="margin-left:auto">${DATA.activity.length}</span></div>
+      ${DATA.activity.slice(0,9).map(a=>`<div class="act">
+        <em style="background:${M[a.who]?M[a.who].color:'#888'}"></em>
+        ${esc(a.text.length>30?a.text.slice(0,30)+'…':a.text)}
+        <span class="t">${esc(a.when)}</span></div>`).join('')}
       <hr>
-      <div style="display:flex;align-items:center;margin-bottom:12px"><b style="font-size:12.5px">담당자 미지정 업무</b>
+      <div style="display:flex;align-items:center;margin-bottom:12px"><b style="font-size:12.5px">담당자 미지정</b>
         <span style="margin-left:auto;color:var(--red);font-size:11px;font-weight:700">${DATA.unassigned.length}건</span></div>
       ${DATA.unassigned.slice(0,3).map(u=>`<div class="uz"><div><b>${esc(u.title.length>22?u.title.slice(0,22)+'…':u.title)}</b>
         <span>${esc(P[u.p].name.slice(0,16))}</span></div><button onclick="openModal('${u.p}','${esc(u.title)}')">지정</button></div>`).join('')}
@@ -650,49 +756,60 @@ function vDashboard(){
     ${timeline()}
   </div>
   <div class="cols3">
-    <div class="card pad"><div class="ch"><h3>일간 · 오늘 할 일</h3>
-      <span class="pill" style="margin-left:auto">${T.filter(t=>t.cycle==='일간').length}건</span></div>
-      ${T.filter(t=>t.cycle==='일간').slice(0,5).map(t=>`<div class="li"><span class="chk ${t.status==='완료'?'on':''}" onclick="toggleDone('${t.id}')"></span>
-        ${esc(t.title.length>20?t.title.slice(0,20)+'…':t.title)}<span class="tm">${t.due.slice(5).replace('-','.')}</span></div>`).join('')}
-    </div>
     <div class="card pad"><div class="ch"><h3>최근 7일 · 일별 완료</h3>
-      <span class="pill" style="margin-left:auto;background:var(--green-soft);color:var(--green)">${total?Math.round(done/total*100):0}%</span></div>
+      <span class="pill" style="margin-left:auto;background:var(--green-soft);color:var(--green)">${periodLogs().length}건</span></div>
       <div class="wk">${dailyDone().map((c,i,arr)=>{
         const mx=Math.max(1,...arr.map(x=>x.n));
         return `<div class="b ${i===arr.length-1?'on':''}" title="${c.date} · 완료 ${c.n}건">
           <i style="height:${Math.round(6+c.n/mx*78)}px"></i><span>${c.wd}</span></div>`;}).join('')}</div>
       <div style="display:flex;justify-content:space-around;text-align:center;font-size:11px;color:var(--muted);margin-top:6px">
-        <div><b style="display:block;font-size:15px;color:var(--txt)">${done}건</b>완료</div>
-        <div><b style="display:block;font-size:15px;color:var(--txt)">${run}건</b>진행</div>
-        <div><b style="display:block;font-size:15px;color:var(--txt)">${T.filter(t=>t.tag==='미팅').length}건</b>미팅</div></div>
+        <div><b style="display:block;font-size:15px;color:var(--txt)">${periodLogs().length}건</b>완료</div>
+        <div><b style="display:block;font-size:15px;color:var(--txt)">${live.filter(t=>t.status==='진행중').length}건</b>진행</div>
+        <div><b style="display:block;font-size:15px;color:var(--txt)">${live.filter(t=>t.tag==='미팅').length}건</b>미팅</div></div>
     </div>
     <div class="card pad"><div class="ch"><h3>월간 · 마일스톤</h3><span class="pill" style="margin-left:auto">8월</span></div>
       ${DATA.milestonesGlobal.map(m=>`<div class="mst"><b>${m.date}</b>${esc(m.text)}
         <em style="background:${m.tone==='red'?'var(--red)':m.tone==='blue'?'var(--blue)':'var(--muted)'}"></em></div>`).join('')}
     </div>
+    <div class="card pad"><div class="ch"><h3>담당자 부하</h3>
+      <span class="pill" style="margin-left:auto">${live.length}건</span></div>
+      ${DATA.members.map(m=>{const n=live.filter(t=>t.a===m.id).length;
+        return `<div class="li" style="cursor:pointer" onclick="setRPerson('${m.id}');location.hash='#/report'">
+          ${av(m.id,22)}<span style="margin-left:8px">${esc(m.name)}</span>
+          <span class="tm"><b style="color:var(--txt)">${n}</b>건</span></div>`;}).join('')}
+      <div style="margin-top:10px;font-size:11px;color:var(--muted);line-height:1.6">
+        관리 대상 업무만 셉니다. 끝난 기록은 <a href="#/activity" style="color:var(--blue)">활동 이력</a>에 있습니다.</div>
+    </div>
   </div>`;
 }
 
 function vProjects(){
-  return `<div class="card pad"><div class="ch"><h3>전체 프로젝트</h3>
-    <span class="pill">${DATA.projects.length}개</span></div>
-    <table><thead><tr><th>프로젝트</th><th>발주처</th><th>총괄</th><th>인원</th><th>진행률</th><th>상태</th><th style="text-align:right">기한</th></tr></thead><tbody>
-    ${DATA.projects.map(p=>`<tr onclick="location.hash='#/project/${p.id}'" style="cursor:pointer">
-      <td><div class="pn"><span class="tick" style="background:${M[p.owner].color}"></span>
-        <span><b>${esc(p.name)}</b><span>${esc(p.sector)}</span>
-        <span class="nxt" title="${esc(p.next||'')}">▸ ${esc(p.next||'확인 필요')}</span></span></div></td>
-      <td style="font-size:12.5px;color:var(--txt2)">${esc(p.client)}</td>
-      <td><div class="who">${av(p.owner)}${esc(M[p.owner].name)}</div></td>
-      <td><div class="stack">${p.team.slice(0,4).map(t=>`<span class="av" style="background:${M[t].color};width:24px;height:24px;margin-left:-7px"></span>`).join('')}</div></td>
-      <td><div class="pg"><div class="bar"><i style="width:${p.progress}%;background:${tone(p.status)}"></i></div><span>${p.progress}%</span></div></td>
-      <td><span class="bd ${p.status}">${p.status}</span></td>
-      <td style="text-align:right"><span class="dday ${dday(p.due)<=3?'urg':''}">${ddayTxt(p.due)}</span></td></tr>`).join('')}
-    </tbody></table></div>`;
+  return TRACKS().map(tr=>{
+    const ps=projOf(tr.id); if(!ps.length) return '';
+    return `<div class="card pad" style="margin-bottom:18px">
+    <div class="ch"><span class="tdot" style="background:${tr.color}"></span>
+      <h3>${esc(tr.name)}</h3><span class="pill">${ps.length}개</span>
+      <span style="margin-left:10px;font-size:11.5px;color:var(--muted)">${esc(tr.desc)}</span></div>
+    <table><thead><tr><th>프로젝트</th><th>발주처</th><th>총괄</th><th>업무</th><th>진행률</th><th>상태</th><th style="text-align:right">기한</th></tr></thead><tbody>
+    ${ps.map(pr=>{const st=pstat(pr.id);
+      return `<tr onclick="location.hash='#/project/${pr.id}'" style="cursor:pointer">
+      <td><div class="pn"><span class="tick" style="background:${tr.color}"></span>
+        <span><b>${esc(pr.name)}</b>
+        <span class="nxt" title="${esc(pr.next||'')}">▸ ${esc(pr.next||'확인 필요')}</span></span></div></td>
+      <td style="font-size:12.5px;color:var(--txt2)">${esc(pr.client)}</td>
+      <td><div class="who">${av(pr.owner)}${esc(M[pr.owner].name)}</div></td>
+      <td style="font-size:12px;color:var(--txt2)">남은 <b style="color:var(--txt)">${st.live}</b>
+        ${st.late?`<span style="color:var(--red)"> · 지연 ${st.late}</span>`:''}</td>
+      <td><div class="pg"><div class="bar"><i style="width:${pr.progress}%;background:${tone(pr.status)}"></i></div><span>${pr.progress}%</span></div></td>
+      <td><span class="bd ${pr.status}">${pr.status}</span></td>
+      <td style="text-align:right"><span class="dday ${dday(pr.due)<=3?'urg':''}">${ddayTxt(pr.due)}</span></td></tr>`;}).join('')}
+    </tbody></table></div>`;}).join('');
 }
 
 function vProject(id){
   const p=P[id]; if(!p) return `<div class="empty">프로젝트를 찾을 수 없습니다.</div>`;
-  const ts=DATA.tasks.filter(t=>t.p===id);
+  const ts=LIVE().filter(t=>t.p===id);
+  const lg=LOGS().filter(t=>t.p===id).slice().sort((a,b)=>(b.end||'').localeCompare(a.end||''));
   const cols=[['대기','var(--muted)'],['진행중','var(--blue)'],['완료','var(--green)']];
   const doneMs=p.milestones.filter(m=>m.done).length;
   const byMem={}; ts.forEach(t=>byMem[t.a]=(byMem[t.a]||0)+1);
@@ -710,7 +827,7 @@ function vProject(id){
   ${siteRow(p.id)}
   ${kpiRow([
     {label:'전체 진행률',value:p.progress,unit:'%',pct:p.progress,foot:esc(p.progressNote||'근거 확인 필요')},
-    {label:'완료 업무',value:ts.filter(t=>t.status==='완료').length,unit:`/ ${ts.length}건`,pct:ts.length?Math.round(ts.filter(t=>t.status==='완료').length/ts.length*100):0,foot:'금주 기준'},
+    {label:'완료 기록',value:lg.length,unit:'건',pct:(lg.length+ts.length)?Math.round(lg.length/(lg.length+ts.length)*100):0,foot:`남은 업무 ${ts.length}건`},
     {label:'잔여 기간',value:Math.max(0,dday(p.due)),unit:'일',pct:60,foot:`기한 ${p.due.slice(5).replace('-','.')}`},
     {label:'투입 인원',value:p.team.length,unit:'명',pct:100,color:'var(--violet)',foot:p.team.map(t=>M[t].name).join(' · ')}
   ])}
@@ -768,26 +885,66 @@ function vProject(id){
 }
 
 function vTasks(){
-  const groups=['지연','진행중','대기','완료'];
-  return `<div class="card pad"><div class="ch"><h3>전체 업무</h3><span class="pill">${DATA.tasks.length}건</span>
-    <button class="btn" style="margin-left:auto" onclick="openModal()">+ 업무 등록</button></div>
-    <table><thead><tr><th>업무</th><th>프로젝트</th><th>담당자</th><th>주기</th><th>우선순위</th><th>상태</th><th style="text-align:right">기한</th></tr></thead><tbody>
-    ${groups.flatMap(g=>DATA.tasks.filter(t=>t.status===g)).map(t=>`<tr>
-      <td><b style="font-weight:600">${esc(t.title)}</b>
-        <span style="display:block;font-size:10.5px;color:var(--muted);margin-top:2px">${esc(t.tag)}</span></td>
-      <td style="font-size:12px;color:var(--txt2)">${esc(P[t.p].name.slice(0,16))}</td>
-      <td><div class="who">${av(t.a)}${esc(M[t.a].name)}</div></td>
-      <td style="font-size:12px;color:var(--txt2)">${t.cycle}</td>
-      <td style="font-size:12px;font-weight:600;color:${t.prio==='높음'?'var(--red)':'var(--txt2)'}">${t.prio}</td>
-      <td><span class="bd ${t.status}" style="cursor:pointer" onclick="cycleStatus('${t.id}')" title="클릭하면 상태가 넘어갑니다">${t.status}</span></td>
-      <td style="text-align:right"><span class="dday ${dday(t.due)<=2&&t.status!=='완료'?'urg':''}">${t.status==='완료'?'—':ddayTxt(t.due)}</span></td>
-    </tr>`).join('')}</tbody></table></div>
-    <div class="card pad" style="margin-top:20px"><div class="ch"><h3>담당자 미지정</h3>
+  const q=(t)=>`<div class="tr2" onclick="openTask('${t.id}')">
+      <span class="dot" style="background:${tone(t.status)}"></span>
+      <div><b>${esc(t.title)}</b><span>${esc(t.tag)} · ${esc(M[t.a].name)} · ${t.prio}</span></div>
+      ${t.comments&&t.comments.length?`<span class="cbadge">💬 ${t.comments.length}</span>`:''}
+      <span class="bd ${t.status}" onclick="event.stopPropagation();cycleStatus('${t.id}')">${t.status}</span>
+      <span class="dday ${dday(t.due)<=2?'urg':''}">${ddayTxt(t.due)}</span></div>`;
+  const live=LIVE();
+  const body=TRACKS().map(tr=>{
+    const ps=projOf(tr.id).filter(pr=>live.some(t=>t.p===pr.id));
+    if(!ps.length) return '';
+    const n=live.filter(t=>TRK(P[t.p].track).id===tr.id).length;
+    return `<div class="card pad" style="margin-bottom:16px">
+      <div class="ch"><span class="tdot" style="background:${tr.color}"></span>
+        <h3>${esc(tr.name)}</h3><span class="pill">${n}건</span></div>
+      ${ps.map(pr=>{
+        const ts=live.filter(t=>t.p===pr.id).slice()
+          .sort((a,b)=>({'지연':0,'진행중':1,'검수중':2,'대기':3,'협의중':4}[a.status]-{'지연':0,'진행중':1,'검수중':2,'대기':3,'협의중':4}[b.status])||a.due.localeCompare(b.due));
+        const open=OPENP[pr.id]!==false;
+        return `<div class="acc">
+          <div class="ah" onclick="togAcc('${pr.id}')">
+            <span class="car ${open?'on':''}">▸</span><b>${esc(pr.name)}</b>
+            <span class="pill" style="margin-left:8px">${ts.length}건</span>
+            <span style="margin-left:auto;font-size:11px;color:var(--muted)">${esc(pr.next||'').slice(0,34)}</span>
+            <button class="btn sec" style="margin-left:10px;padding:5px 11px;font-size:11px"
+              onclick="event.stopPropagation();openModal('${pr.id}')">+ 업무</button></div>
+          ${open?`<div class="ab">${ts.map(q).join('')}</div>`:''}
+        </div>`;}).join('')}
+    </div>`;}).join('');
+  return `<div class="card pad" style="margin-bottom:16px;display:flex;align-items:center;gap:12px">
+      <b style="font-size:13px">관리 대상 업무 ${live.length}건</b>
+      <span style="font-size:11.5px;color:var(--muted)">끝난 기록 ${LOGS().length}건은 <a href="#/activity" style="color:var(--blue)">활동 이력</a>으로 내려가 있습니다</span>
+      <button class="btn" style="margin-left:auto" onclick="openModal()">+ 업무 등록</button></div>
+    ${body||'<div class="empty">관리 대상 업무가 없습니다.</div>'}
+    ${DATA.unassigned.length?`<div class="card pad"><div class="ch"><h3>담당자 미지정</h3>
       <span class="pill" style="background:var(--red-soft);color:var(--red)">${DATA.unassigned.length}건</span></div>
       ${DATA.unassigned.map(u=>`<div class="li"><span class="chk"></span>${esc(u.title)}
         <span style="font-size:11px;color:var(--muted);margin-left:8px">${esc(P[u.p].name.slice(0,14))}</span>
         <button class="btn" style="margin-left:auto;padding:6px 13px;font-size:11.5px" onclick="openModal('${u.p}','${esc(u.title)}')">지정</button></div>`).join('')}
-    </div>`;
+    </div>`:''}`;
+}
+
+/* 활동 이력 — 끝난 기록. 프로젝트별로 접어서 본다 */
+function vActivity(){
+  const logs=LOGS().slice().sort((a,b)=>(b.end||'').localeCompare(a.end||''));
+  const byDate={};
+  logs.forEach(t=>(byDate[t.end]=byDate[t.end]||[]).push(t));
+  const days=Object.keys(byDate).sort().reverse();
+  return `<div class="card pad" style="margin-bottom:16px;display:flex;align-items:center;gap:12px">
+      <b style="font-size:13px">완료 기록 ${logs.length}건</b>
+      <span style="font-size:11.5px;color:var(--muted)">각 채팅방 적재분이 여기에 쌓입니다. 관리 대상 업무는 <a href="#/tasks" style="color:var(--blue)">업무관리</a>에 있습니다</span></div>
+    ${days.map(dt=>`<div class="card pad" style="margin-bottom:14px">
+      <div class="ch"><h3>${dt.slice(5).replace('-','. ')}</h3>
+        <span class="pill">${byDate[dt].length}건</span>
+        <span style="margin-left:10px;font-size:11.5px;color:var(--muted)">${'일월화수목금토'[new Date(dt+'T00:00:00').getDay()]}요일</span></div>
+      ${byDate[dt].map(t=>`<div class="tr2" onclick="openTask('${t.id}')">
+        <span class="dot" style="background:${TRK(P[t.p].track).color}"></span>
+        <div><b>${esc(t.title)}</b><span>${esc(P[t.p].name.replace(/\s*\(.*?\)/,''))} · ${esc(M[t.a].name)}</span></div>
+        ${t.comments&&t.comments.length?`<span class="cbadge">💬 ${t.comments.length}</span>`:''}
+        <span style="font-size:11px;color:var(--muted)">${esc(t.tag)}</span></div>`).join('')}
+    </div>`).join('')||'<div class="empty">기록이 없습니다.</div>'}`;
 }
 
 function vSchedule(){
@@ -837,7 +994,7 @@ function vAssign(){
 }
 
 function vReport(){
-  const r=periodRange(), T=periodTasks();
+  const r=periodRange(), T=periodTasks().concat(periodLogs());
   const pl={day:'일간',week:'최근 7일',month:'월간'}[PERIOD];
   const dayLabel={day:'오늘',week:'최근 7일',month:'이번 달'}[PERIOD];
   const of=id=>T.filter(t=>t.a===id);
@@ -1072,6 +1229,7 @@ function render(){
     schedule:()=>header('스케줄','최근 7일 타임라인 · 마감 · 마일스톤',seg)+vSchedule(),
     assign:()=>header('담당자 배정','사람 + AI 직원 통합 배정 현황',seg)+vAssign(),
     report:()=>header('리포트','담당자별 · 전체 종합 요약보고',seg)+vReport(),
+    activity:()=>header('활동 이력','끝난 작업 기록 — 날짜순')+vActivity(),
     orders:()=>header('업체별 수주현황 · 연계 프로젝트','거래처별 수주·수금 · 선행/핵심/후속 연계 맵',seg)+vOrders()
   };
   if(QUERY){ v.innerHTML=header('검색 결과','업무 · 프로젝트 · 미지정 항목에서 찾습니다',seg)+vSearch(); return; }
@@ -1091,11 +1249,18 @@ function toggleTheme(){
 let selMem=[]; let pendingUnassigned=null;
 function openModal(pid,title){
   pendingUnassigned = title ? {p:pid,title:title} : null;
-  document.getElementById('f-proj').innerHTML=DATA.projects.map(p=>
-    `<option value="${p.id}" ${p.id===pid?'selected':''}>${esc(p.name)}</option>`).join('');
+  document.getElementById('f-proj').innerHTML=
+    TRACKS().map(tr=>`<optgroup label="${esc(tr.name)}">`+projOf(tr.id).map(p=>
+      `<option value="${p.id}" ${p.id===pid?'selected':''}>${esc(p.name)}</option>`).join('')+'</optgroup>').join('')
+    +`<option value="__new__">＋ 새 프로젝트 직접 입력…</option>`;
+  document.getElementById('f-newtrack').innerHTML=TRACKS().map(tr=>
+    `<option value="${tr.id}">${esc(tr.name)}</option>`).join('');
+  document.getElementById('f-newwrap').style.display='none';
+  ['f-newname','f-newclient','f-newnext'].forEach(k=>document.getElementById(k).value='');
   document.getElementById('f-title').value=title||'';
-  document.getElementById('f-s').value='2026-08-01';
-  document.getElementById('f-e').value='2026-08-08';
+  const d7=new Date(TODAY); d7.setDate(TODAY.getDate()+7);
+  document.getElementById('f-s').value=ymd(TODAY);
+  document.getElementById('f-e').value=ymd(d7);
   selMem=[];
   renderChips();
   document.getElementById('ov').classList.add('on');
@@ -1109,6 +1274,10 @@ function renderChips(){
 }
 function pickMem(id){ selMem.includes(id)?selMem.splice(selMem.indexOf(id),1):selMem.push(id); renderChips(); }
 function closeModal(){ document.getElementById('ov').classList.remove('on'); }
+function onProjSel(){
+  const v=document.getElementById('f-proj').value;
+  document.getElementById('f-newwrap').style.display = v==='__new__' ? 'block' : 'none';
+}
 document.querySelectorAll('.opts').forEach(g=>g.addEventListener('click',e=>{
   if(e.target.tagName!=='BUTTON')return;
   g.querySelectorAll('button').forEach(b=>b.classList.remove('on')); e.target.classList.add('on');
@@ -1117,7 +1286,23 @@ async function submitTask(){
   const t=document.getElementById('f-title').value.trim();
   if(!t){ toast('업무명을 입력하세요'); return; }
   if(!selMem.length){ toast('담당자를 1명 이상 지정하세요'); return; }
-  const task={ p:document.getElementById('f-proj').value, title:t,
+  let pid=document.getElementById('f-proj').value;
+  if(pid==='__new__'){
+    const nm=document.getElementById('f-newname').value.trim();
+    const nx=document.getElementById('f-newnext').value.trim();
+    if(!nm){ toast('새 프로젝트 이름을 입력하세요'); return; }
+    if(!nx){ toast('그 프로젝트에서 지금 해야 할 일을 적어 주세요'); return; }
+    const proj={ name:nm, client:document.getElementById('f-newclient').value.trim()||'미정',
+      track:document.getElementById('f-newtrack').value, next:nx, owner:selMem[0] };
+    if(API){ if(!await push('project.add',{proj})) return; }
+    else { proj.id='p'+Date.now(); Object.assign(proj,{sector:'신규',type:'자사',team:[selMem[0]],
+      progress:0,status:'대기',due:document.getElementById('f-e').value,priority:'보통',
+      contract:'미정',amount:0,progressNote:'신설 — 착수 전',milestones:[],deliverables:[]});
+      DATA.projects.push(proj); reindex(); }
+    pid = (DATA.projects.find(x=>x.name===nm)||{}).id;
+    if(!pid){ toast('프로젝트 생성 후 다시 시도해 주세요'); return; }
+  }
+  const task={ p:pid, title:t,
     desc:document.getElementById('f-desc').value.trim(), tag:'신규', a:selMem[0],
     due:document.getElementById('f-e').value, status:'대기',
     prio:document.querySelector('#f-prio .on').dataset.v,
@@ -1146,6 +1331,47 @@ async function toggleDone(id){
   const next = t.status==='완료' ? '진행중' : '완료';
   if(API){ await push('task.status',{id,status:next}); }
   else { t.status=next; render(); toast('데모 — 저장되지 않습니다'); }
+}
+/* ---------- 업무 상세 · 피드백 코멘트 ---------- */
+function openTask(id){ OPENT=id; drawTask(); document.getElementById('tov').classList.add('on'); }
+function closeTask(){ OPENT=null; document.getElementById('tov').classList.remove('on'); }
+function drawTask(){
+  const t=DATA.tasks.find(x=>x.id===OPENT); if(!t){ closeTask(); return; }
+  const pr=P[t.p], tr=TRK(pr.track), cs=t.comments||[];
+  document.getElementById('tmd').innerHTML=`
+    <div class="mh"><div>
+      <span class="tchip" style="background:${tr.color}">${esc(tr.name)}</span>
+      <h3>${esc(t.title)}</h3>
+      <p>${esc(pr.name)} · ${esc(t.tag)} · 기한 ${t.due.slice(5).replace('-','.')}
+         ${t.log?' · 완료 '+String(t.end||'').slice(5).replace('-','.'):''}</p></div>
+      <button class="x" onclick="closeTask()">✕</button></div>
+    <div class="tmeta">
+      <div><small>담당자</small><div class="who">${av(t.a)}${esc(M[t.a].name)}</div></div>
+      <div><small>상태</small><span class="bd ${t.status}" style="cursor:pointer"
+        onclick="cycleStatus('${t.id}').then(drawTask)">${t.status}</span></div>
+      <div><small>우선순위</small><b>${esc(t.prio)}</b></div>
+      <div><small>기입자</small><b>${esc(M[t.by]?M[t.by].name:t.by||'-')}</b></div>
+    </div>
+    ${t.desc?`<div class="tdesc">${esc(t.desc)}</div>`:''}
+    <div class="cwrap">
+      <div class="chd">피드백 <span>${cs.length}</span></div>
+      ${cs.length?cs.map(c=>`<div class="cmt">
+        ${av(c.by,26)}<div><div class="cm1"><b>${esc(M[c.by]?M[c.by].name:c.by)}</b><span>${esc(c.when)}</span></div>
+        <p>${esc(c.text)}</p></div></div>`).join(''):`<div class="cempty">아직 코멘트가 없습니다.</div>`}
+      <div class="cin">
+        ${av(ME,26)}<textarea id="c-txt" rows="2" placeholder="${esc(M[ME]?M[ME].name:'')}(으)로 코멘트를 남깁니다 — 예: 8/10 자격등록 먼저 처리해 주세요"></textarea>
+        <button class="btn" onclick="submitComment()">등록</button></div>
+    </div>`;
+}
+async function submitComment(){
+  const el=document.getElementById('c-txt'), v=el.value.trim();
+  if(!v){ toast('내용을 입력하세요'); return; }
+  if(!ME){ toast('기입자를 먼저 선택하세요'); return; }
+  el.value='';
+  if(API){ if(await push('task.comment',{id:OPENT,text:v})) drawTask(); }
+  else { const t=DATA.tasks.find(x=>x.id===OPENT);
+    (t.comments=t.comments||[]).push({by:ME,text:v,when:stamp()}); drawTask();
+    toast('등록했습니다 (데모 — 저장되지 않음)'); }
 }
 function toast(m){
   const el=document.getElementById('toast'); el.textContent=m; el.classList.add('on');
@@ -1204,7 +1430,7 @@ const MUT = {
     if(!board.projects.some(p=>p.id===task.p)) throw new Error('없는 프로젝트입니다');
     if(!board.members.some(m=>m.id===task.a)) throw new Error('없는 담당자입니다');
     const t=Object.assign({},task), rm=t.removeUnassigned; delete t.removeUnassigned;
-    t.id='t'+Date.now().toString(36); t.by=by;
+    t.id='t'+Date.now().toString(36); t.by=by; t.comments=[];
     board.tasks.unshift(t);
     if(rm) board.unassigned=board.unassigned.filter(u=>!(u.p===rm.p&&u.title===rm.title));
     logAct(board,t.a,'업무 등록 · '+t.title,by);
@@ -1226,6 +1452,27 @@ const MUT = {
     const i=board.tasks.findIndex(x=>x.id===id); if(i<0) throw new Error('없는 업무입니다');
     const [t]=board.tasks.splice(i,1); logAct(board,t.a,`${t.title} · 삭제`,by); return `${t.title} · 삭제`;
   },
+  'task.comment'(board,{id,text,by}){
+    const t=board.tasks.find(x=>x.id===id);
+    if(!t) throw new Error('없는 업무입니다');
+    if(!text||!text.trim()) throw new Error('내용이 없습니다');
+    (t.comments=t.comments||[]).push({by,text:text.trim(),when:stamp()});
+    logAct(board,by,`${t.title} · 코멘트`,by);
+    return '코멘트';
+  },
+  'project.add'(board,{proj,by}){
+    if(!proj||!proj.name) throw new Error('프로젝트 이름이 없습니다');
+    if(!proj.next) throw new Error('해야 할 일을 적어야 합니다');
+    if(board.projects.some(p=>p.name===proj.name)) throw new Error('같은 이름의 프로젝트가 있습니다');
+    const due=new Date(); due.setMonth(due.getMonth()+1);
+    board.projects.push(Object.assign({
+      id:'p'+Date.now().toString(36), sector:'신규', type:'자사', team:[proj.owner||by],
+      progress:0, status:'대기', due:due.toISOString().slice(0,10), priority:'보통',
+      contract:'미정', amount:0, progressNote:'신설 — 착수 전',
+      milestones:[], deliverables:[]}, proj, {owner:proj.owner||by}));
+    logAct(board,by,`프로젝트 신설 · ${proj.name}`,by);
+    return '프로젝트 신설';
+  },
   'project.progress'(board,{id,progress,by}){
     const p=board.projects.find(x=>x.id===id); if(!p) throw new Error('없는 프로젝트입니다');
     p.progress=Math.max(0,Math.min(100,Number(progress)||0));
@@ -1239,8 +1486,16 @@ async function pull(){
     const before = DATA.__rev;
     const j = MODE==='gh' ? await ghGet() : await srvGet();
     if(String(j.rev)===String(before)) return;               // 변한 게 없다
+    const prevAct=(DATA.activity||[])[0];
     DATA=j.board; DATA.__rev=j.rev; reindex(); render();
-    if(before!==undefined) toast('갱신됨 — 다른 사람이 기입했습니다');
+    if(OPENT) drawTask();
+    if(before!==undefined){
+      const a=(DATA.activity||[])[0];
+      const who = a&&M[a.who]?M[a.who].name:'';
+      toast(a&&(!prevAct||a.when!==prevAct.when||a.text!==prevAct.text)
+        ? `${who}님 · ${a.text.length>28?a.text.slice(0,28)+'…':a.text}`
+        : '갱신됨 — 다른 사람이 기입했습니다');
+    }
   }catch(e){ /* 일시적 실패는 화면을 건드리지 않는다 */ }
 }
 async function push(action,payload){
@@ -1316,7 +1571,7 @@ function afterLoad(){
   if(MODE==='static') ME = (DATA.members.find(m=>m.kind==='human')||DATA.members[0]).id;
   render();
   if(MODE!=='static' && !ME) pickMeFirst();
-  if(MODE!=='static' && !POLLING){ POLLING=true; setInterval(pull, MODE==='gh'?15000:6000); }
+  if(MODE!=='static' && !POLLING){ POLLING=true; setInterval(pull, MODE==='gh'?8000:4000); }
 }
 (async function boot(){
   if(MODE==='gh'){
